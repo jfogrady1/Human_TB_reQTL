@@ -1,0 +1,9 @@
+data/
+software/
+TB_Cell_ranger_aggr/
+work/
+results/
+.snakemake/
+SCINA.log
+*.smk
+snakepit/

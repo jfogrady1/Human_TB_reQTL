@@ -1,0 +1,133 @@
+## variant calling
+
+## reference fasta
+reference: '/home/workspace/jogrady/heQTL/data/ref_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa'
+
+
+## path location for the bam files
+bam_path_0: '/home/workspace/jogrady/heQTL/work/RNA-seq/align/T0/'
+bam_path_1: '/home/workspace/jogrady/heQTL/work/RNA-seq/align/T1/'
+bam_path_2: '/home/workspace/jogrady/heQTL/work/RNA-seq/align/T2/'
+bam_path_3: '/home/workspace/jogrady/heQTL/work/RNA-seq/align/T3/'
+bam_path_4: '/home/workspace/jogrady/heQTL/work/RNA-seq/align/T4/'
+
+## extra name scheme to get the actual bam file from the bam_path above.
+## ideally this should just be '{sample}.bam' or something simple, but this allows complex handling
+bam_name: '{sample}.bam'
+
+
+# need to bind these onto the path of singularity to tell it that it can access the model etc
+binding_paths:
+  - '/home/workspace/jogrady/heQTL/work/'
+  - '/home/workspace/jogrady/heQTL/data/'
+  - '/home/workspace/jogrady/heQTL/config/'
+  - '$TMPDIR'
+
+
+## whatever you want the output folder to be named
+Run_name_0: '/home/workspace/heQTL/work/variant_call/T0'
+Run_name_1: '/home/workspace/heQTL/work/variant_call/T1'
+Run_name_2: '/home/workspace/heQTL/work/variant_call/T2'
+Run_name_3: '/home/workspace/heQTL/work/variant_call/T3'
+Run_name_4: '/home/workspace/heQTL/work/variant_call/T4'
+
+## number of chunks to run make_examples on. More shards = more parallel.
+shards: 15
+
+## what regions do you want to run DeepVariant on. All is a catch-all for every contig.
+regions:
+  all: ~
+
+## other regions examples if you want per-chromosome. Explicitly write out all the chromosomes as regions.
+## regions:
+##   1: 1
+##   2: 2
+##   3: 3
+
+## can also pass bed files to be parsed, or a mix of bed files and contig names.
+## regions:
+##   autosomes: 'autosomes.bed'
+##   sex: 'sex_chromosomes.bed'
+##   MT: 'MT'
+
+
+## DeepVariant model. Generally should use 'WGS' - here we are using RNA
+model: 'RNA'
+checkpoint: '/home/workspace/jogrady/heQTL/data/model/model.ckpt'
+
+## Different GLnexus config files for merging. Can use a default option or specify a path with a yml file. (MUST BE YML NOT YAML).
+GL_config:
+  Unrevised: '/home/workspace/jogrady/heQTL/config/GL_DV_raw.yml'
+
+# DeepVariant and GLnexus containers.
+containers:
+  DV: docker://google/deepvariant:1.5.0
+
+## resources for each step of the pipeline.
+resources:
+  make_examples:
+    mem_mb: 7500
+    walltime: '4h'
+  call_variants:
+    threads: 16
+    mem_mb: 750
+    walltime: '24h'
+  postprocess:
+    mem_mb: 15000
+    walltime: '4h'
+  merge:
+    threads: 6
+    mem_mb: 7000
+    walltime: '4:00'
+
+## can pass a wildcard string to glob all the bam files from the bam_path directory. 
+## here we had to fake the first string so the sample ID was only set to the second occurence of sample (see bam_name).
+samples:
+ SRR12609394: 'SRR12609394.bam'
+ SRR12609405: 'SRR12609405.bam'
+ SRR12609414: 'SRR12609414.bam'
+ SRR12609425: 'SRR12609425.bam'
+ SRR12609434: 'SRR12609434.bam'
+ SRR12609449: 'SRR12609449.bam'
+ SRR12609475: 'SRR12609475.bam'
+ SRR12609489: 'SRR12609489.bam'
+ SRR12609495: 'SRR12609495.bam'
+ SRR12609506: 'SRR12609506.bam'
+ SRR12609516: 'SRR12609516.bam'
+ SRR12609526: 'SRR12609526.bam'
+ SRR12609535: 'SRR12609535.bam'
+ SRR12609546: 'SRR12609546.bam'
+ SRR12609574: 'SRR12609574.bam'
+ SRR12609595: 'SRR12609595.bam'
+ SRR12609608: 'SRR12609608.bam'
+ SRR12609626: 'SRR12609626.bam'
+ SRR12609641: 'SRR12609641.bam'
+ SRR12609651: 'SRR12609651.bam'
+ SRR12609676: 'SRR12609676.bam'
+ SRR12609687: 'SRR12609687.bam'
+ SRR12609696: 'SRR12609696.bam'
+ SRR12609770: 'SRR12609770.bam'
+ SRR12609780: 'SRR12609780.bam'
+ SRR12609800: 'SRR12609800.bam'
+ SRR12609808: 'SRR12609808.bam'
+ SRR12609817: 'SRR12609817.bam'
+ SRR12609855: 'SRR12609855.bam'
+ SRR12609875: 'SRR12609875.bam'
+ SRR12609885: 'SRR12609885.bam'
+ SRR12609897: 'SRR12609897.bam'
+ SRR12609910: 'SRR12609910.bam'
+ SRR12609922: 'SRR12609922.bam'
+ SRR12609934: 'SRR12609934.bam'
+ SRR12609974: 'SRR12609974.bam'
+ SRR12609982: 'SRR12609982.bam'
+ SRR12609994: 'SRR12609994.bam'
+ SRR12610003: 'SRR12610003.bam'
+ SRR12610014: 'SRR12610014.bam'
+ SRR12610032: 'SRR12610032.bam'
+ SRR12610053: 'SRR12610053.bam'
+ SRR12610063: 'SRR12610063.bam'
+ SRR12610071: 'SRR12610071.bam'
+ SRR12610092: 'SRR12610092.bam'
+ SRR12610115: 'SRR12610115.bam'
+ SRR12610123: 'SRR12610123.bam'
+ SRR12610148: 'SRR12610148.bam'
