@@ -1,12 +1,35 @@
 # Multi variate adaptive shrinkage to identify response eQTLs
+
+
 # MASHR
 
+args <- commandArgs(trailingOnly = TRUE)
+#### Load in packages
+
+library(broom)
 library(ashr)
 library(mashr)
 library(data.table)
 library(tidyverse)
+library(ggVennDiagram) 
+library(ggvenn)
+library(ggrepel)
+library(gprofiler2)
+library(viridis)
+library(ggpubr)
+library(cowplot)
+library(broom)
+library(vcfR)
+library(rstatix)
 set.seed(34567)
-tensor_colnames_egene = c("phenotype_id", "num_var", "beta_shape1", "beta_shape2", "true_df", "pval_true_df",
+
+
+
+
+##### Define functions for and opening necessary files
+
+
+tensor_colnames_egene = c("phenotype_id", "num_var", "beta_shape1", "beta_shape2", "true_df", "pval_true_df", # nolint: assignment_linter.
                           "variant_id", "start_distance", "end_distance", "ma_samples", "ma_count", "af",
                           "pval_nominal", "slope", "slope_se", "pval_perm", "pval_beta", "qval",
                           "pval_nominal_threshold", "pval_adj_BH", "is_eGene", "timepoint", "distance")
@@ -37,11 +60,11 @@ open_eGene = function(timepoints, chromosome){
   return(results_df_egene)
 }
 
-T0 <- open_eGene("T0", chromosomes)
-T1 <- open_eGene("T1", chromosomes)
-T2 <- open_eGene("T2", chromosomes)
-T3 <- open_eGene("T3", chromosomes)
-T4 <- open_eGene("T4", chromosomes)
+T0 <- open_eGene(args[1], chromosomes)
+T1 <- open_eGene(args[2], chromosomes)
+T2 <- open_eGene(args[3], chromosomes)
+T3 <- open_eGene(args[4], chromosomes)
+T4 <- open_eGene(args[5], chromosomes) # nolint
 head(T4)
 # Get common genes to all
 common_genes = intersect(T0$phenotype_id, intersect(T1$phenotype_id, intersect(T2$phenotype_id, intersect(T3$phenotype_id, T4$phenotype_id))))
@@ -65,12 +88,15 @@ all(T2$variant_id == T3$variant_id)
 all(T3$variant_id == T4$variant_id)
 
 
+
+
+####### Getting everything set up for MASHR
+
 # Now have all common SNPs tested against all common genes
 # set up the mash data frame
 simdata = simple_sims(10000,5,1) # simulates data on 40k tests
 
 
-simdata
 # get matrix of effect sizes
 bhat_df <- cbind(T0$slope, T1$slope, T2$slope, T3$slope, T4$slope)
 bhat_df_matrix <- as.matrix(bhat_df)
@@ -84,7 +110,7 @@ bhat_df_se_matrix <- as.matrix(bhat_df_se)
 colnames(bhat_df_se_matrix) <- c("T0", "T1", "T2", "T3", "T4")
 rownames(bhat_df_se_matrix) <- paste0(T0$variant_id,"-",T0$phenotype_id)
 
-head(bhat_df_matrix)
+
 # function to cycle through results and collate into single object
 open_eGene_signif = function(timepoints){
   tensor_colnames_egene = c("phenotype_id", "num_var", "beta_shape1", "beta_shape2", "true_df", "pval_true_df",
@@ -110,13 +136,12 @@ open_eGene_signif = function(timepoints){
 
 # Here we will get the most significant true-eQTL SNP per gene accross conditions
 
-signif_eGenes = open_eGene_signif(timepoints = c("T0", "T1", "T2", "T3", "T4"))
+signif_eGenes = open_eGene_signif(timepoints = c(args[1], args[2], args[3], args[4], args[5]))
 
-dim(signif_eGenes)
 signif_eGenes <- signif_eGenes %>% filter(phenotype_id %in% common_genes)
 
 signif_eGenes #<- signif_eGenes %>% filter(is_eGene == TRUE)
-dim(signif_eGenes)
+
 
 signif_eGenes$variant_gene <- paste0(signif_eGenes$variant_id,"-",signif_eGenes$phenotype_id)
 
@@ -156,8 +181,6 @@ U.ed = cov_ed(data.strong, U.pca)
 U.c = cov_canonical(data.random)
 m = mash(data.random, Ulist = c(U.ed,U.c), outputlevel = 1)
 
-m
-
 
 m2 = mash(data.strong, g=get_fitted_g(m), fixg=TRUE)
 
@@ -175,19 +198,27 @@ get_pairwise_sharing(
 thresh <- 0.05
 
 lfsr.mash <- m2$result$lfsr
-lfsr.mash
+#lfsr.mash
 sigmat <- (lfsr.mash < thresh)
 nsig <- rowSums(sigmat)
 lfsr.mash.sig <- lfsr.mash[nsig > 0,]
 dim(lfsr.mash.sig) 
 apply(lfsr.mash<thresh, 2, sum)
 
-head(lfsr.mash.sig)
 
  # T0   T1   T2   T3   T4 
 #4061 4049 3954 3982 4137
 
-symbols <- fread("/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf") %>% filter(V3 == "gene") # select(V9)
+
+
+
+
+
+####################### 
+# Downstream stuff after MASHR
+#######################
+
+symbols <- fread(args[6]) %>% filter(V3 == "gene") # select(V9)
 symbols <- symbols %>% separate(V9, into = c("gene_id","gene_type","gene_name"), sep = ";")
 symbols$gene_id <- gsub('gene_id "', '', symbols$gene_id)
 symbols$gene_id <- gsub('"', '', symbols$gene_id)
@@ -208,16 +239,13 @@ mas_signif_table <- left_join(mas_signif_table, symbols, by = c("gene" = "gene_i
 
 mas_signif_table <- mas_signif_table %>% select(-c("length"))
 mas_signif_table <- mas_signif_table %>% select(gene, gene_name, variant, T0, T1, T2, T3, T4)
-head(mas_signif_table)
-write.table(mas_signif_table, file = "/home/workspace/jogrady/heQTL/results/reQTLs/MashR_new_LFSR_values", sep = "\t", quote = FALSE)
+write.table(mas_signif_table, file = args[7], sep = "\t", quote = FALSE)
 
 
 m2_posterior = mash_compute_posterior_matrices(m,data.strong)
 
 updated_means <- m2_posterior$PosteriorMean
 updated_sds <- m2_posterior$PosteriorSD
-updated_means
-head(updated_means)
 T0_beta <- T0 %>% select(1,2,8) %>% mutate(variant_gene = paste0(variant_id,"-",phenotype_id)) %>% select(variant_gene, slope) %>% filter(variant_gene %in% rownames(m2_posterior$PosteriorMean))  %>% arrange(variant_gene) %>% mutate(Timepoint = "T0", Method = "Original")
 T1_beta <- T1 %>% select(1,2,8) %>% mutate(variant_gene = paste0(variant_id,"-",phenotype_id)) %>% select(variant_gene, slope) %>% filter(variant_gene %in% rownames(m2_posterior$PosteriorMean))  %>% arrange(variant_gene) %>% mutate(Timepoint = "T1", Method = "Original")
 T2_beta <- T2 %>% select(1,2,8) %>% mutate(variant_gene = paste0(variant_id,"-",phenotype_id)) %>% select(variant_gene, slope) %>% filter(variant_gene %in% rownames(m2_posterior$PosteriorMean))  %>% arrange(variant_gene) %>% mutate(Timepoint = "T2", Method = "Original")
@@ -240,12 +268,10 @@ T3_se <- T3 %>% select(1,2,9) %>% mutate(variant_gene = paste0(variant_id,"-",ph
 T4_se <- T4 %>% select(1,2,9) %>% mutate(variant_gene = paste0(variant_id,"-",phenotype_id)) %>% select(variant_gene, slope_se) %>%
   filter(variant_gene %in% rownames(m2_posterior$PosteriorMean)) %>% arrange(variant_gene) %>% mutate(Timepoint = "T4", Method = "Original")
 
-head(T0)
 
 new_se_T0 <- updated_sds[,1] %>% as.data.frame() %>% mutate(Timepoint = "T0", Method = "MASHR", variant_gene = rownames(updated_sds)) %>% 
   select(4,1,2,3) %>% arrange(variant_gene)
 colnames(new_se_T0)[2] <- "slope_se"
-head(new_se_T0)
 new_se_T1 <- updated_sds[,2] %>% as.data.frame() %>% mutate(Timepoint = "T1", Method = "MASHR", variant_gene = rownames(updated_sds)) %>% 
   select(4,1,2,3) %>% arrange(variant_gene)
 colnames(new_se_T1)[2] <- "slope_se"
@@ -262,13 +288,11 @@ new_se_T4 <- updated_sds[,5] %>% as.data.frame() %>% mutate(Timepoint = "T4", Me
   select(4,1,2,3) %>% arrange(variant_gene)
 colnames(new_se_T4)[2] <- "slope_se"
 
-head(new_se_T4)
 all(colnames(new_se_T4) == colnames(T4_se))
 all(rownames(new_se_T4) == T4_se$variant_gene)
 
 
 
-head(T0)
 T0_effect <- T0 %>% select(1,2,8) %>% mutate(variant_gene = paste0(variant_id,"-",phenotype_id)) %>% select(variant_gene, slope) %>%
   filter(variant_gene %in% rownames(m2_posterior$PosteriorMean)) %>% arrange(variant_gene) %>% mutate(Timepoint = "T0", Method = "Original")
 
@@ -284,12 +308,10 @@ T3_effect <- T3 %>% select(1,2,8) %>% mutate(variant_gene = paste0(variant_id,"-
 T4_effect <- T4 %>% select(1,2,8) %>% mutate(variant_gene = paste0(variant_id,"-",phenotype_id)) %>% select(variant_gene, slope) %>%
   filter(variant_gene %in% rownames(m2_posterior$PosteriorMean)) %>% arrange(variant_gene) %>% mutate(Timepoint = "T4", Method = "Original")
 
-head(T0)
 
 new_effect_T0 <- updated_means[,1] %>% as.data.frame() %>% mutate(Timepoint = "T0", Method = "MASHR", variant_gene = rownames(updated_sds)) %>% 
   select(4,1,2,3) %>% arrange(variant_gene)
 colnames(new_effect_T0)[2] <- "slope"
-head(new_effect_T0)
 new_effect_T1 <- updated_means[,2] %>% as.data.frame() %>% mutate(Timepoint = "T1", Method = "MASHR", variant_gene = rownames(updated_sds)) %>% 
   select(4,1,2,3) %>% arrange(variant_gene)
 colnames(new_effect_T1)[2] <- "slope"
@@ -306,7 +328,6 @@ new_effect_T4 <- updated_means[,5] %>% as.data.frame() %>% mutate(Timepoint = "T
   select(4,1,2,3) %>% arrange(variant_gene)
 colnames(new_effect_T4)[2] <- "slope"
 
-head(new_effect_T4)
 all(colnames(new_effect_T4) == colnames(T4_se))
 all(rownames(new_effect_T4) == T4_se$variant_gene)
 
@@ -321,10 +342,10 @@ colnames(merged_beta) <- colnames(merged_se)
 mashr_visualisation <- rbind(merged_se, merged_beta)
 
 
-head(merged_beta)
+#######################################
+# Check to see variance and median effect of both distributions before and after applying MASHR
+#######################################
 
-head(T0_beta)
-head(new_effect_T0)
 Mahsh_r_plot <- mashr_visualisation %>% ggplot(aes(x = Timepoint, y = slope_se)) + geom_boxplot(aes(fill = factor(Method, levels = c("Original", "MASHR")))) + facet_wrap(~Metric, scales = "free_y", nrow = 2) + labs(y = "Value", x = "Timepoint", fill = "Method")
 Mahsh_r_plot
 
@@ -372,13 +393,7 @@ new_effect_merged <- left_join(new_effect_T0, new_effect_T1)
 new_effect_merged <- left_join(new_effect_merged, new_effect_T2)
 new_effect_merged <- left_join(new_effect_merged, new_effect_T3)
 new_effect_merged <- left_join(new_effect_merged, new_effect_T4)
-head(new_effect_merged)
 
-
-head(T0_se)
-head(new_se_T0)
-hist(T0_se$slope_se)
-hist(new_se_T0$T0_posterior_sd)
 new_se_T0 <- T0_se %>% select(1,2)
 colnames(new_se_T0)[2] <- "T0_posterior_sd"
 new_se_T1 <- T1_se %>% select(1,2)
@@ -395,7 +410,7 @@ new_se_merged <- left_join(new_se_T0, new_se_T1)
 new_se_merged <- left_join(new_se_merged, new_se_T2)
 new_se_merged <- left_join(new_se_merged, new_se_T3)
 new_se_merged <- left_join(new_se_merged, new_se_T4)
-head(new_se_merged)
+
 
 
 mas_signif_table$variant_gene <- paste0(mas_signif_table$variant, "-", mas_signif_table$gene)
@@ -405,48 +420,15 @@ mas_signif_table <- left_join(mas_signif_table, new_se_merged)
 
 
 
-head(T0)
-head(new_se_T0)
+################################
+# write to a file
+################################
 t.test(T0$slope_se, new_se_T0$T0_posterior_sd,)
-write.table(mas_signif_table, file = "/home/workspace/jogrady/heQTL/results/reQTLs/MashR_new_LFSR_values.txt", sep = "\t", quote = FALSE)
-head(signif_gtex)
 
-head(merged_beta)
+write.table(mas_signif_table, file = args[8], sep = "\t", quote = FALSE)
 
 
-# Comparison to GTEX
-signif_gtex <- fread("/home/workspace/jogrady/heQTL/data/gtex/GTEx_Analysis_v8_QTLs_GTEx_Analysis_v8_eQTL_all_associations_Whole_Blood.allpairs.txt.gz")
-head(signif_gtex)
-dim(signif_gtex)
-signif_gtex$variant_id <- gsub("_", ":", signif_gtex$variant_id)
-signif_gtex$variant_id <- gsub("chr", "", signif_gtex$variant_id)
-signif_gtex$variant_id <- gsub(":b38", "", signif_gtex$variant_id)
-signif_gtex$variant_gene <- paste0(signif_gtex$variant_id, "-", signif_gtex$gene_id)
-
-merged_beta_gtex <- left_join(merged_beta, signif_gtex, by = c("variant_gene" = "variant_gene"))
-merged_beta_gtex %>% filter(!is.na(tss_distance)) %>% group_by(Timepoint) %>% summarise(N = n())
-
-# 2390 tested in both
-ggplot(data = merged_beta_gtex, aes(x = slope.x, y = slope.y, col = Timepoint)) + geom_point() + scale_colour_manual(values = my_palette) + 
-geom_smooth(method = "lm", col = "steelblue", se = FALSE) +
-facet_wrap(~ Timepoint)
-
-
-T0_gtex <- merged_beta_gtex %>% filter(Timepoint == "T0") 
-
-cor.test(T0_gtex$slope.x, T0_gtex$slope.y)
-rm(signif_gtex)
-colnames(merged_beta_gtex)
-
-View(merged_beta_gtex)
-head(signif_variants)
-
-
-
-hist(m2_posterior$PosteriorMean[,1])
-colnames(m2_posterior$PosteriorSD)
-# here we will look at the plot of
-T0
+ 
 bhat_df <- cbind(T0$slope, T1$slope, T2$slope, T3$slope, T4$slope)
 
 # Now with correlations
@@ -467,7 +449,6 @@ mag_by_tis <- function(t1, t2) {
     # Count number of significant and not significant
     nsig_tis <- rowSums(lfsr.mash_tis < thresh)
     nonsig_tis <- rowSums(lfsr.mash_tis > nonsig_thresh)
-    head(nsig_tis)
     # Filter and merge for significant ones
     pm.mash.beta_tis_union <- pm.mash.beta.sig[nsig_tis>0, grepl("T0|1", colnames(pm.mash.beta.sig))]
     dim(pm.mash.beta_tis_union) # significant in at least one tissue
@@ -481,7 +462,6 @@ mag_by_tis <- function(t1, t2) {
     # Count number of significant and not significant
     nsig_tis <- rowSums(lfsr.mash_tis < thresh)
     nonsig_tis <- rowSums(lfsr.mash_tis > nonsig_thresh)
-    head(nsig_tis)
     # Filter and merge for significant ones
     pm.mash.beta_tis_union <- pm.mash.beta.sig[nsig_tis>0, grepl("T0|2", colnames(pm.mash.beta.sig))]
     
@@ -494,7 +474,6 @@ mag_by_tis <- function(t1, t2) {
     # Count number of significant and not significant
     nsig_tis <- rowSums(lfsr.mash_tis < thresh)
     nonsig_tis <- rowSums(lfsr.mash_tis > nonsig_thresh)
-    head(nsig_tis)
     # Filter and merge for significant ones
     pm.mash.beta_tis_union <- pm.mash.beta.sig[nsig_tis>0, grepl("T0|3", colnames(pm.mash.beta.sig))]
     
@@ -507,10 +486,8 @@ mag_by_tis <- function(t1, t2) {
     # Count number of significant and not significant
     nsig_tis <- rowSums(lfsr.mash_tis < thresh)
     nonsig_tis <- rowSums(lfsr.mash_tis > nonsig_thresh)
-    head(nsig_tis)
     # Filter and merge for significant ones
     pm.mash.beta_tis_union <- pm.mash.beta.sig[nsig_tis>0, grepl("T0|4", colnames(pm.mash.beta.sig))]
-    
     # Filter for those significant and not significant
     pm.mash.beta_tis <- pm.mash.beta.sig[nsig_tis>0&nonsig_tis==0, grepl("T0|4", colnames(pm.mash.beta.sig))]
   }
@@ -518,30 +495,32 @@ mag_by_tis <- function(t1, t2) {
   # Rename and convert to numeric
   colnames(pm.mash.beta_tis) <- c("T0", "T1")
   # Calculate sharing and if number of eQTLs between both are ahared (within MAG)
-  pm.mash.beta_tis <- pm.mash.beta_tis %>% data.frame() %>% mutate(sharing=ifelse(T1/T0 >(1/mag)&T1/T0<mag, T, F))
+  pm.mash.beta_tis <- pm.mash.beta_tis %>% data.frame() %>% mutate(sharing=ifelse(T1/T0 >(1/mag)&T1/T0<mag, TRUE, FALSE))
   dim(pm.mash.beta_tis_union)[1]-sum(pm.mash.beta_tis$sharing) #time-specific eGenes
 }
 
 mag=2
 thresh=0.05 
 nonsig_thresh=1
-time_mag_t0_t1 <- mag_by_tis("T0", "T1")
-time_mag_t0_t2 <- mag_by_tis("T0", "T2")
-time_mag_t0_t3 <- mag_by_tis("T0", "T3")
-time_mag_t0_t4 <- mag_by_tis("T0", "T4")
+time_mag_t0_t1 <- mag_by_tis(args[1], args[2])
+time_mag_t0_t2 <- mag_by_tis(args[1], args[3])
+time_mag_t0_t3 <- mag_by_tis(args[1], args[4])
+time_mag_t0_t4 <- mag_by_tis(args[1], args[5])
 
 time_mag_t0_t1
 time_mag_t0_t2 
+
 time_mag_t0_t3 
 time_mag_t0_t4 
+
+
 
 257 + 217 + 236 + 303
 
 
 #write dynamic eGenes  
 #write dynamic eGenes
-library(tidyverse)  
-View(lfsr.mash_tis)
+
 mag_by_tis_gene <- function(t0, t1) {
 
   if(t1 == "T1") {
@@ -580,17 +559,26 @@ mag_by_tis_gene <- function(t0, t1) {
   pm.mash.beta_tis <- lfsr.mash_tis %>% cbind(pm.mash.beta_tis) %>% as.data.frame() %>% 
   mutate(sharing=ifelse((T0_lfsr<thresh | T1_lfsr<thresh) &
                           T0_lfsr<nonsig_thresh & T1_lfsr < nonsig_thresh & 
-                          T1_beta/T0_beta>(1/mag) & T1_beta/T0_beta < mag, T, F),
+                          T1_beta/T0_beta>(1/mag) & T1_beta/T0_beta < mag, TRUE, FALSE),
   effect_abs_diff=abs(T1_beta-T0_beta), mag_diff=abs(T1_beta/T0_beta), gene=as.character(lapply(strsplit(rownames(.), '-'), `[[`, 2)), gene_snp=rownames(.)) %>% 
   filter(!sharing) %>% arrange(desc(effect_abs_diff)) %>% dplyr::select(gene, gene_snp, T0_lfsr, T1_lfsr, T0_beta, T1_beta, effect_abs_diff, mag_diff, sharing)
 }
+0.00001/0.81
 
-hist(time_mag_t0_t1_gene$T0_beta, breaks = 30)
-time_mag_t0_t1_gene <- mag_by_tis_gene("T0", "T1")
-time_mag_t0_t2_gene <- mag_by_tis_gene("T0", "T2") 
-time_mag_t0_t3_gene <- mag_by_tis_gene("T0", "T3") 
-time_mag_t0_t4_gene <- mag_by_tis_gene("T0", "T4")
-time_mag_t0_t1_gene
+abs(0.81) / (0.0001)
+
+time_mag_t0_t1_gene <- mag_by_tis_gene(args[1], args[2])
+time_mag_t0_t2_gene <- mag_by_tis_gene(args[1], args[3]) 
+time_mag_t0_t3_gene <- mag_by_tis_gene(args[1], args[4]) 
+time_mag_t0_t4_gene <- mag_by_tis_gene(args[1], args[5])
+dim(time_mag_t0_t4_gene)
+
+
+dim(time_mag_t0_t1_gene)
+
+
+
+
 all_genes <- rbind(time_mag_t0_t1_gene, time_mag_t0_t2_gene, time_mag_t0_t3_gene, time_mag_t0_t4_gene)
 
 all_genes <- all_genes %>% arrange(desc(mag_diff))
@@ -605,27 +593,24 @@ colnames(time_mag_t0_t4_gene) <- c("gene", "gene_snp", "T0_lfsr", "T4_lfsr", "T0
 
 
 
-library(ggVennDiagram) 
-library(ggvenn)
-
 # List of items
 x <- list(T0_T1 = time_mag_t0_t1_gene$gene_snp, T0_T2 = time_mag_t0_t2_gene$gene_snp, T0_T3 = time_mag_t0_t3_gene$gene_snp, T0_T4 = time_mag_t0_t4_gene$gene_snp)
 
 DR_eQTLs <- unique(c(time_mag_t0_t1_gene$gene_snp, T0_T2 = time_mag_t0_t2_gene$gene_snp, T0_T3 = time_mag_t0_t3_gene$gene_snp, T0_T4 = time_mag_t0_t4_gene$gene_snp))
 
-length(DR_eQTLs)
 
-write.table(DR_eQTLs, file = "/home/workspace/jogrady/heQTL/results/reQTLs/DR_eQTLs_MASH_2_lfsr_0.05.txt")
+length(DR_eQTLs)
+write.table(DR_eQTLs, file = args[9], sep = "\t", quote = FALSE)
 names(x) = c("T0 V T1","T0 V T2","T0 V T3","T0 V T4")
 venn <- ggvenn(x, fill_color = c("#feb24c", "#fc4e2a", "#bd0026", "#800026"),
   stroke_size = 1, set_name_size = 6,   text_size = 8, 
   )
 venn
-ggsave("/home/workspace/jogrady/heQTL/work/reQTLs/Venn_diagram_overlap_LFSR_0.05_MAG_2.pdf", width = 12, height = 12, dpi = 600)
+ggsave(args[10], width = 12, height = 12, dpi = 600)
 
 # Get in annotation
 # get all information in one file
-symbols <- fread("/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf") %>% filter(V3 == "gene")
+symbols <- fread(args[6]) %>% filter(V3 == "gene")
 symbols <- symbols %>% separate(V9, into = c("gene_id","gene_type","gene_name"), sep = ";")
 symbols$gene_id <- gsub('gene_id "', '', symbols$gene_id)
 symbols$gene_id <- gsub('"', '', symbols$gene_id)
@@ -635,7 +620,8 @@ symbols$gene_name <- gsub('"', '', symbols$gene_name)
 symbols$gene_name <- gsub(' ', '', symbols$gene_name)
 symbols$gene_name <- gsub(" ", "", symbols$gene_name)
 symbols <- symbols %>% select(gene_id, gene_name)
-head(time_mag_t0_t1_gene)
+
+
 time_mag_t0_t1_gene <- left_join(time_mag_t0_t1_gene, symbols, by = c("gene" = "gene_id"))
 time_mag_t0_t2_gene <- left_join(time_mag_t0_t2_gene, symbols, by = c("gene" = "gene_id"))
 time_mag_t0_t3_gene <- left_join(time_mag_t0_t3_gene, symbols, by = c("gene" = "gene_id"))
@@ -645,7 +631,8 @@ time_mag_t0_t1_gene$snp <-  as.character(lapply(strsplit(time_mag_t0_t1_gene$gen
 time_mag_t0_t2_gene$snp <-  as.character(lapply(strsplit(time_mag_t0_t2_gene$gene_snp, '-'), `[[`, 1))
 time_mag_t0_t3_gene$snp <-  as.character(lapply(strsplit(time_mag_t0_t3_gene$gene_snp, '-'), `[[`, 1))
 time_mag_t0_t4_gene$snp <-  as.character(lapply(strsplit(time_mag_t0_t4_gene$gene_snp, '-'), `[[`, 1))
-
+colnames(time_mag_t0_t1_gene)
+colnames(time_mag_t0_t4_gene)
 
 
 time_mag_t0_t1_gene <- time_mag_t0_t1_gene %>% select(2,11,1,10,3,4,5,6)
@@ -653,26 +640,20 @@ time_mag_t0_t2_gene <- time_mag_t0_t2_gene %>% select(2,11,1,10,3,4,5,6)
 time_mag_t0_t3_gene <- time_mag_t0_t3_gene %>% select(2,11,1,10,3,4,5,6)
 time_mag_t0_t4_gene <- time_mag_t0_t4_gene %>% select(2,11,1,10,3,4,5,6)
 colnames(time_mag_t0_t4_gene)
-
+dim(time_mag_t0_t1_gene)
 #all_genes$gene <- gsub("\\..*", "", all_genes$gene)
 
-head(time_mag_t0_t1_gene)
 
-write.table(time_mag_t0_t1_gene, file = "/home/workspace/jogrady/heQTL/work/reQTLs/T0_V_T1_reQTLs.txt", sep = "\t")
-write.table(time_mag_t0_t2_gene, file = "/home/workspace/jogrady/heQTL/work/reQTLs/T0_V_T2_reQTLs.txt", sep = "\t")
-write.table(time_mag_t0_t3_gene, file = "/home/workspace/jogrady/heQTL/work/reQTLs/T0_V_T3_reQTLs.txt", sep = "\t")
-write.table(time_mag_t0_t4_gene, file = "/home/workspace/jogrady/heQTL/work/reQTLs/T0_V_T4_reQTLs.txt", sep = "\t")
-
+write.table(time_mag_t0_t1_gene, file = args[11], sep = "\t")
+write.table(time_mag_t0_t2_gene, file = args[12], sep = "\t")
+write.table(time_mag_t0_t3_gene, file = args[13], sep = "\t")
+write.table(time_mag_t0_t4_gene, file = args[14], sep = "\t")
 
 
 
 
-test <- c(time_mag_t0_t1_gene$gene_name, time_mag_t0_t2_gene$gene_name, time_mag_t0_t3_gene$gene_name, time_mag_t0_t4_gene$gene_name)
 
-test <- as.data.frame(test)
-head(test)
-table(test$test)
-View(time_mag_t0_t1_gene)
+
 intersect_reQTLs <- intersect(time_mag_t0_t1_gene$gene_snp, intersect(time_mag_t0_t2_gene$gene_snp, intersect(time_mag_t0_t3_gene$gene_snp, time_mag_t0_t4_gene$gene_snp)))
 length(intersect_reQTLs)
 #all_genes <- all_genes[intersect_reQTLs,]
@@ -681,14 +662,15 @@ t0_t1_common <- time_mag_t0_t1_gene[time_mag_t0_t1_gene$gene_snp %in% intersect_
 t0_t2_common <- time_mag_t0_t2_gene[time_mag_t0_t2_gene$gene_snp %in% intersect_reQTLs,]
 t0_t3_common <- time_mag_t0_t3_gene[time_mag_t0_t3_gene$gene_snp %in% intersect_reQTLs,]
 t0_t4_common <- time_mag_t0_t4_gene[time_mag_t0_t4_gene$gene_snp %in% intersect_reQTLs,]
+colnames(time_mag_t0_t1_gene)
+
+colnames(time_mag_t0_t2_gene)
+
+colnames(time_mag_t0_t3_gene)
+colnames(time_mag_t0_t4_gene)
 
 
-head(t0_t1_common)
 ALL_common <- cbind(t0_t1_common, t0_t2_common[, c(6,8)], t0_t3_common[,c(6,8)], t0_t4_common[,c(6,8)])
-
-
-dim(ALL_common)
-
 ALL_common_betas <- ALL_common %>% select(grep("gene_name|T*_beta", colnames(ALL_common)))
 ALL_common_betas <- cbind(ALL_common_betas, as.vector(t0_t1_common$gene_snp))
 
@@ -705,7 +687,7 @@ ALL_common_betas_long <- pivot_longer(ALL_common_betas, cols = c(colnames(ALL_co
 ALL_common_betas_long <- ALL_common_betas_long %>% mutate(label = if_else(Timepoint == "T4_beta" & (Treated_effect_direction == "Consistently Positive" | Treated_effect_direction == "Consistently Negative"), gene_name, NA))
 
 my_palette = c("#ffeda0", "#feb24c", "#fc4e2a", "#bd0026", "#800026")
-library(ggrepel)
+
 ggplot(ALL_common_betas_long, aes(x = Timepoint, y = Betas, group = Gene_SNP, label = label)) + 
 geom_line(data = ALL_common_betas_long, inherit.aes = T, aes(col = Treated_effect_direction, alpha = line_alpha)) +  
 geom_point(size = 3, aes(fill = Timepoint), shape = 21) + theme_bw() +
@@ -725,19 +707,14 @@ length(unique(all_genes))
 
 
 
-library(gprofiler2)
+
 ALL_common_betas_long$Gene_id <- ALL_common_betas_long$Gene_SNP
 ALL_common_betas_long$Gene_id <- sub(".*-", "", ALL_common_betas_long$Gene_id)
 ALL_common_betas_long$Gene_id <- sub("\\..*", "", ALL_common_betas_long$Gene_id)
-length(unique(all_genes))
-common_genes
-ALL_common_betas_long$Gene_id
-write.table(common_genes, "/home/workspace/jogrady/heQTL/work/reQTLs/Common_genes.txt", quote = F, sep = "\t", col.names = F, row.names = F)
-write.table(unique(ALL_common_betas_long$Gene_id), "/home/workspace/jogrady/heQTL/work/reQTLs/Overlapping_response_eGenes_LFSR_0.1.txt", quote = F, sep = "\t", col.names = F, row.names = F)
+write.table(common_genes, args[15], quote = F, sep = "\t", col.names = F, row.names = F)
+write.table(unique(ALL_common_betas_long$Gene_id), args[16], quote = F, sep = "\t", col.names = F, row.names = F)
+unique(ALL_common_betas_long$Gene_id)
 
-common_genes
-all_genes$gene
-library(gprofiler2)
 
 
 all_genes$gene <- gsub("\\..*", "", all_genes$gene)
@@ -753,7 +730,7 @@ ordered_query = TRUE,
                 custom_bg = common_genes)
 df <- as.data.frame(do.call(cbind, gostres$result))
 df <- apply(df,2,as.character)
-write.table(df, file = "/home/workspace/jogrady/heQTL/work/reQTLs/Gprofiler_reGenes.txt")
+write.table(df, file = args[17], sep = "\t", quote = FALSE)
 
 terms <- c("TNF-alpha/NF-kappa B signaling complex 10",
            "HSP90-CDC37 chaperone complex",
@@ -774,9 +751,10 @@ terms <- c("TNF-alpha/NF-kappa B signaling complex 10",
 )
 
 
+
 gostres$result <- gostres$result %>%
   mutate(label = ifelse(term_name %in% terms, term_name, NA))
-colnames(result_lables)[11] <- "term_name"
+#colnames(result_lables)[11] <- "term_name"
 result_df <- gostres$result
     result_df <- result_df %>% mutate(alpha_value = ifelse(term_name %in% terms, 1, 0.5))
     color_palette <- viridis(5)
@@ -805,12 +783,12 @@ result_df <- gostres$result
     geom_hline(yintercept=-log10(0.05), col="black", linetype = "dashed") +
     guides(color = guide_legend(override.aes = list(size = 5)))
 my_plot
-ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/Gprofiler_reGenes.pdf", width = 12, height = 12, dpi = 600)
+ggsave(args[18], width = 12, height = 12, dpi = 600)
 
 
 
 Mahsh_r_plot
-ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/MASHR_plot_effect_size.pdf", width = 12, height = 12)
+ggsave(args[19], width = 12, height = 12)
 
 
 # Distance to TSS
@@ -819,14 +797,11 @@ tss_mash <- lfsr.mash.sig
 tss_mash <- as.data.frame(tss_mash)
 tss_mash$variant_gene <- rownames(tss_mash)
 tss_mash <- tss_mash %>% pivot_longer(names_to = "Timepoint", values_to = "LFSR", cols = colnames(tss_mash)[1:5])
-head(tss_mash)
-head
 
 
 T0$variant_gene <- paste0(T0$variant_id, "-", T0$phenotype_id)
 T0_distance <- T0 %>% select(start_distance, variant_gene)
 
-tss_mash
 
 DR_eQTLs <- as.data.frame(DR_eQTLs)
 DR_eQTLs$Timepoint <- "Response-eQTL"
@@ -843,20 +818,18 @@ tss_mash$Timepoint
 tss_mash$Timepoint <- factor(tss_mash$Timepoint, levels = c("T0", "T1", "T2", "T3", "T4","Response-eQTL"))
 
 ggplot(data = tss_mash, aes(x = start_distance, fill = Timepoint, col = Timepoint)) +
-geom_histogram(alpha=0.2, position = 'identity', bins = 100) + 
+geom_histogram(alpha= 0.5, position = 'identity', bins = 99) + 
 geom_density(data = tss_mash, aes(x=start_distance, fill=Timepoint), alpha=.3) + 
 scale_fill_manual(values = c(my_palette, "purple")) + theme_bw()#+ facet_wrap(~ Timepoint)
 
 
-library(ggpubr)
-library(cowplot)
 
 # 1. Create the histogram plot
 phist <- gghistogram(
   tss_mash, x = "start_distance", rug = FALSE,
   fill = "Timepoint", palette = c(my_palette, "purple"), alpha = 0.3, bins = 49
 )
-phist
+
 # 2. Create the density plot with y-axis on the right
 # Remove x axis elements
 pdensity <- ggdensity(
@@ -870,36 +843,39 @@ tss_mash, x = "start_distance",
   rremove("x.text") +
   rremove("x.ticks") +
   rremove("legend")
-pdensity
+
 # 3. Align the two plots and then overlay them.
 aligned_plots <- align_plots(phist, pdensity, align="hv", axis="tblr")
 ggdraw(aligned_plots[[1]]) + draw_plot(aligned_plots[[2]])
-ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/TSS_start_distance.pdf", width = 12, height = 12, dpi = 600)
+ggsave(args[20], width = 12, height = 12, dpi = 600)
 
 
 tss_mash %>% group_by(Timepoint) %>% summarise(Mean = mean(start_distance))
-tss_mash %>%  dplyr::group_by(Timepoint) %>% 
-    do(tidy(shapiro.test(.$start_distance))) %>% 
-    ungroup() %>% 
-    select(-method)
+tss_mash %>%
+  group_by(Timepoint) %>%
+  group_modify(~ {
+    test_result <- shapiro.test(.x$start_distance)
+    tibble(statistic = test_result$statistic, p.value = test_result$p.value)
+  }) %>%
+  ungroup()
+
 
 test <- tss_mash %>% filter(Timepoint == "Response-eQTL")
 shapiro.test(test$start_distance)
-hist(test$start_distance)
-#load("DESEQ2.RData")
+
+
+
 
 # check to see the number of mTB specific genes/ treated genes and dynamic eQTLs
-colnames(time_mag_t0_t1_gene)
+
 T0_mtb_genes <- time_mag_t0_t1_gene %>% filter(T0_lfsr < 0.05 & T1_lfsr > 0.05) %>% select(gene_name)
 T1_mtb_genes <- time_mag_t0_t2_gene %>% filter(T0_lfsr < 0.05 & T2_lfsr > 0.05) %>% select(gene_name)
 T2_mtb_genes <- time_mag_t0_t3_gene %>% filter(T0_lfsr < 0.05 & T3_lfsr > 0.05) %>% select(gene_name)
 T3_mtb_genes <- time_mag_t0_t4_gene %>% filter(T0_lfsr < 0.05 & T4_lfsr > 0.05) %>% select(gene_name)
 
 mtb_specific <- intersect(T0_mtb_genes$gene_name, intersect(T1_mtb_genes$gene_name, intersect(T2_mtb_genes$gene_name, T3_mtb_genes$gene_name)))
-length(mtb_specific)
 
 
-mtb_specific
 
 
 
@@ -908,21 +884,13 @@ T1_treat_genes <- time_mag_t0_t2_gene %>% filter(T0_lfsr > 0.05 & T2_lfsr < 0.05
 T2_treat_genes <- time_mag_t0_t3_gene %>% filter(T0_lfsr > 0.05 & T3_lfsr < 0.05) %>% select(gene_name)
 T3_treat_genes <- time_mag_t0_t4_gene %>% filter(T0_lfsr > 0.05 & T4_lfsr < 0.05) %>% select(gene_name)
 
-T0_treat_genes$gene_name
-T1_treat_genes$gene_name
-T2_treat_genes$gene_name
-T3_treat_genes$gene_name
-View(time_mag_t0_t1_gene)
+
 treat_specific <- intersect(T0_treat_genes$gene_name, intersect(T1_treat_genes$gene_name, intersect(T2_treat_genes$gene_name, T3_treat_genes$gene_name)))
 
-treat_specific
-
-time_mag_t0_t1_gene %>% filter(gene_name == "GSTO2")
 
 
 
 
-common_genes
 genes_of_interest = c("BAK1",
                       "SCARF1",
                       "ICAM1",
@@ -950,61 +918,44 @@ genes_of_interest = c("BAK1",
                       "GRIN3A",
                       "GBP1P1",
                       "FCGR1CP")
-length(genes_of_interest)
-
-background <- dds_1_V_0$gene_name
-
-new <- ALL_LFC_points$Label
-
-overlap <- length(intersect(new, genes_of_interest)) 
-overlap
-# Perform Fisher's exact test
-fisher_test_result <- fisher.test(matrix(c(overlap, length(new) - overlap, length(genes_of_interest) - overlap, length(background) - length(genes_of_interest)- length(new) + overlap), nrow = 2))
-
-# Print the results
-print(fisher_test_result)
 
 
 
-# PELI1 gene plot
-# ENSG00000197329.12 --> gene id
-# Read in all of the files
 
-# variant --> 2:64130072:G:A
-counts0 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T0_residualised_expression.txt") %>% select(-c(1:4, 6)) #%>% as.matrix()
+ 
+
+##############################
+# Plotting eQTLs
+##############################
+
+# Read in counts
+counts0 <- fread(args[21]) %>% select(-c(1:4, 6)) #%>% as.matrix()
 head(counts0)
 rownames(counts0) <- counts0$gid
 
-counts1 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T1_residualised_expression.txt") %>% select(-c(1:4, 6)) #%>% as.matrix()
+counts1 <- fread(args[22]) %>% select(-c(1:4, 6)) #%>% as.matrix()
 rownames(counts1) <- counts1$gid
 
 
 
-counts2 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T2_residualised_expression.txt") %>% select(-c(1:4, 6)) #%>% as.matrix()
+counts2 <- fread(args[23]) %>% select(-c(1:4, 6)) #%>% as.matrix()
 rownames(counts2) <- counts2$gid
 
 
 
 
-counts3 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T3_residualised_expression.txt") %>% select(-c(1:4,6)) #%>% as.matrix()
+counts3 <- fread(args[24]) %>% select(-c(1:4,6)) #%>% as.matrix()
 rownames(counts3) <- counts3$gid
 
 
 
 
-counts4 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T4_residualised_expression.txt") %>% select(-c(1:4,6)) #%>% as.matrix()
+counts4 <- fread(args[25]) %>% select(-c(1:4,6)) #%>% as.matrix()
 rownames(counts4) <- counts4$gid
-head(counts4)
-
-
-head(counts0)
-head(counts1)
-
 
 
 # VCF data 
-library(vcfR)
-vcf <- vcfR::read.vcfR("/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/DV_IMPUTED_R0.6_filtered.vcf.gz")
+vcf <- vcfR::read.vcfR(args[26])
 vcf@gt
 vcf <- cbind(vcf@fix, vcf@gt)
 head(vcf)
@@ -1017,7 +968,6 @@ vcf[,colnames(vcf)[10:57]] <- lapply(vcf[,colnames(vcf)[10:57]], function(x) sub
 vcf[,colnames(vcf)[10:57]] <- lapply(vcf[,colnames(vcf)[10:57]], function(x) sub("1\\|1:.*", paste0("HOM_ALT"), x))
 
 
-library(rstatix)
 
 eQTL_plot <- function(gene_id, SNP_id, gene_name, counts0, counts1, counts2, counts3, counts4, vcf_file, HOM, HET, HOM_ALT) {
 
@@ -1027,13 +977,11 @@ eQTL_plot <- function(gene_id, SNP_id, gene_name, counts0, counts1, counts2, cou
   counts3_gene <- counts3 %>% filter(gid == gene_id) %>% select(-c(gid)) %>% t() %>% as.data.frame() 
   counts4_gene <- counts4 %>% filter(gid == gene_id) %>% select(-c(gid)) %>% t() %>% as.data.frame() 
   
-  head(counts0_gene)
   colnames(counts0_gene) <- "Expression"
   colnames(counts1_gene) <- "Expression"
   colnames(counts2_gene) <- "Expression"
   colnames(counts3_gene) <- "Expression"
   colnames(counts4_gene) <- "Expression"
-  
   counts0_gene$Sample <- rownames(counts0_gene)
   counts1_gene$Sample <- rownames(counts1_gene)
   counts2_gene$Sample <- rownames(counts2_gene)
@@ -1050,7 +998,6 @@ eQTL_plot <- function(gene_id, SNP_id, gene_name, counts0, counts1, counts2, cou
   print("HERE")
   
   vcf_temp <- vcf %>% filter(ID == SNP_id)
-vcf_temp  
   vcf_temp <- pivot_longer(vcf_temp, cols = c(10:57), names_to = "Sample", values_to = "Genotype")
   vcf_temp <- vcf_temp %>% select(3,10,11)
   
@@ -1076,20 +1023,14 @@ vcf_temp
 }
 
 
+
 # TNFRS10A - MTB specific - Activator of apoptosis
 eQTL_plot(SNP_id = "8:23224131:A:T", gene_id = "ENSG00000104689.10", gene_name = "TNFRS10A", counts0, counts1, counts2, counts3, counts4, vcf_file = vcf, HOM = "AA", HET = "AT", HOM_ALT = "TT")
-ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/TNFRS10A_response_eQTL.pdf", width = 12, height = 12, dpi = 600)
+
+ggsave(args[27], width = 12, height = 12, dpi = 600)
 
 
-eQTL_plot(SNP_id = "7:30438440:C:T", gene_id = "ENSG00000106100.11", gene_name = "NOD1",counts0, counts1, counts2, counts3, counts4, vcf_file = vcf, HOM = "CC", HET = "CG", HOM_ALT = "GG")
-ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/NOD1_response_eQTL.pdf", width = 12, height = 12, dpi = 600)
-# XXXX treatment specific
+eQTL_plot(SNP_id = "21:33360260:G:A", gene_id = "ENSG00000159128.16", gene_name = "IFNGR2",counts0, counts1, counts2, counts3, counts4, vcf_file = vcf, HOM = "GG", HET = "GA", HOM_ALT = "AA")
 
 
-
-# XXXX dynamic
-
-
-
-all_genes
-
+ggsave(args[28], width = 12, height = 12, dpi = 600)
