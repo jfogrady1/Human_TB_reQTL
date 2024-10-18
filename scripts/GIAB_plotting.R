@@ -58,7 +58,7 @@ merged_HG005_spurious <- merged_HG005 %>% filter(MatchALT == FALSE)
 merged_HG006_spurious <- merged_HG006 %>% filter(MatchALT == FALSE)
 merged_HG007_spurious <- merged_HG007 %>% filter(MatchALT == FALSE)
 
-dim(HG001_spurious_triallelic)
+
 HG001_spurious_triallelic <- merged_HG001_spurious %>% filter(str_detect(HG001ALT, ",") | str_detect(mergedALT, ","))
 HG005_spurious_triallelic <- merged_HG005_spurious %>% filter(str_detect(HG005ALT, ",") | str_detect(mergedALT, ","))
 HG006_spurious_triallelic <- merged_HG006_spurious %>% filter(str_detect(HG006ALT, ",") | str_detect(mergedALT, ","))
@@ -127,9 +127,9 @@ ggplot(proportions, aes(x = category, y = Percentage, fill = Group)) +
   
   
 
-ggsave("/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/variantcomparison/DV_GIAB_concordance.pdf", width = 12, height = 12, dpi = 600)
+#ggsave("/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/variantcomparison/DV_GIAB_concordance.pdf", width = 12, height = 12, dpi = 600)
 
-#ggsave(filename = args[6], width = 15, height = 12, dpi = 600, device = "pdf")
+ggsave(filename = args[6], width = 15, height = 12, dpi = 600, device = "pdf")
 
 # Remove triallelic sites
 
@@ -196,5 +196,5 @@ ggplot(proportions, aes(x = category, y = Percentage, fill = Group)) +
   annotate("text", x = 1, y = 5, size = 8, label = paste(round(meanfalse,3),"%")) +
   annotate("text", x = 2, y = 100, size = 8, label = paste(round(meantrue,3),"%"))
 
-
-ggsave("/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/variantcomparison/DV_no_triallelic_GIAB_concordance.pdf", width = 12, height = 12, dpi = 600)
+ggsave(filename = args[7], width = 15, height = 12, dpi = 600, device = "pdf")
+#ggsave("/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/variantcomparison/DV_no_triallelic_GIAB_concordance.pdf", width = 12, height = 12, dpi = 600)

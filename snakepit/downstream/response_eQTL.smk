@@ -1,4 +1,4 @@
-#autosomes = [str(i) for i in range(1, 23)]
+autosomes = [str(i) for i in range(1, 23)]
 #rule all:
      #input:
         #expand('/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/Normalised_counts_{timepoint}_qtltools.bed.gz', timepoint = config["TIME"]),

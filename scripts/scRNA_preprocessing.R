@@ -790,10 +790,15 @@ all.conserved <- rbind(all.markers_0_b,
 head(all.conserved)
 dim(all.conserved)
 
-all.conserved <- all.conserved[order(as.numeric(all.conserved$minimump_p_val)), ]
+all.conserved <- all.conserved %>% group_by(celltype) %>%
+  arrange(as.numeric(minimump_p_val)) %>%
+  slice_head(n = 100) %>%
+  ungroup()
 
 
-all.conserved.unique <- all.conserved[duplicated(all.conserved$gene),]
+
+# Remove duplicates
+all.conserved.unique <- all.conserved[!duplicated(all.conserved$gene),]
 
 dim(all.conserved.unique)
 

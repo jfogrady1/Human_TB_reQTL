@@ -17,8 +17,8 @@ inverse_normal_transform = function(x) {
 
 
 
-
-data <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/CIBERSORTx_Results_Real_deconvolution.txt")
+args = commandArgs(trailingOnly=TRUE)
+data <- fread(args[1])
 
 
 head(data)
@@ -37,11 +37,11 @@ data_4 <- data[145:192,]
 data_5 <- data[193:240,]
 
 
-data_1_medians <- apply(data_1[,-1], 2,mean)
-data_2_medians <- apply(data_2[,-1], 2, mean)
-data_3_medians <- apply(data_3[,-1], 2, mean)
-data_4_medians <- apply(data_4[,-1], 2, mean)
-data_5_medians <- apply(data_5[,-1], 2, mean)
+data_1_medians <- apply(data_1[,-1], 2,median)
+data_2_medians <- apply(data_2[,-1], 2, median)
+data_3_medians <- apply(data_3[,-1], 2, median)
+data_4_medians <- apply(data_4[,-1], 2, median)
+data_5_medians <- apply(data_5[,-1], 2, median)
 
 
 data_1_medians <- data_1_medians[data_1_medians > 0.01]
@@ -58,8 +58,14 @@ data_3_medians
 data_4_medians
 data_5_medians
 
+data_1$Mixture <- gsub("_T0", "", data_1$Mixture)
+data_2$Mixture <- gsub("_T1", "", data_2$Mixture)
+data_3$Mixture <- gsub("_T2", "", data_3$Mixture)
+data_4$Mixture <- gsub("_T3", "", data_4$Mixture)
+data_5$Mixture <- gsub("_T4", "", data_5$Mixture)
+data_1$Mixture
 final_cell_types = intersect(names(data_1_medians), intersect(names(data_2_medians), intersect(names(data_3_medians), intersect(names(data_4_medians), names(data_5_medians)))))
-final_cell_types <- final_cell_types[1:6]
+final_cell_types <- final_cell_types[1:6] # 6 cell types
 final_cell_types
 
 
@@ -68,11 +74,12 @@ data_3$Mixture <- data_1$Mixture
 data_4$Mixture <- data_1$Mixture
 data_5$Mixture <- data_1$Mixture
 
+celltypes <- c(args[2], args[3], args[4], args[5], args[6])
 
-for (celltype in final_cell_types) {
+for (celltype in celltypes) {
   
   vec <- c("Mixture", celltype)
-  
+  vec <- gsub("_", " ", vec)
   data_1_temp <- data_1[,vec]
   data_2_temp <- data_2[,vec]
   data_3_temp <- data_3[,vec]
@@ -103,37 +110,9 @@ for (celltype in final_cell_types) {
   
 }
 
-head(data_3)
-data_3$`Classical Monocyte` <- inverse_normal_transform(data_3$`Classical Monocyte`)
-data_3$`Memory CD4+ T cell` <- inverse_normal_transform(data_3$`Memory CD4+ T cell`)
-head(data_3)
-write.table(data_1, file = "/home/workspace/jogrady/heQTL/work/ieQTL/T0_cell_interaction_input_from_cibersort.txt", sep = "\t", row.names = F, quote = F)
-write.table(data_2, file = "/home/workspace/jogrady/heQTL/work/ieQTL/T1_cell_interaction_input_from_cibersort.txt", sep = "\t", row.names = F, quote = F)
-write.table(data_3, file = "/home/workspace/jogrady/heQTL/work/ieQTL/T2_cell_interaction_input_from_cibersort.txt", sep = "\t", row.names = F, quote = F)
-write.table(data_4, file = "/home/workspace/jogrady/heQTL/work/ieQTL/T3_cell_interaction_input_from_cibersort.txt", sep = "\t", row.names = F, quote = F)
-write.table(data_5, file = "/home/workspace/jogrady/heQTL/work/ieQTL/T4_cell_interaction_input_from_cibersort.txt", sep = "\t", row.names = F, quote = F)
+write.table(data_1, file = args[7], sep = "\t", row.names = F, quote = F)
+write.table(data_2, file = args[8], sep = "\t", row.names = F, quote = F)
+write.table(data_3, file = args[9], sep = "\t", row.names = F, quote = F)
+write.table(data_4, file = args[10], sep = "\t", row.names = F, quote = F)
+write.table(data_5, file = args[11], sep = "\t", row.names = F, quote = F)
 
-head(data_2)
-
-data_long <- data %>% pivot_longer(!Mixture, names_to = "cell_types", values_to = "proportion")
-
-dim(data)
-15*48
-times <- c(rep("T0", 720 ), rep("T1", 720), rep ("T2", 720), rep("T3", 720), rep("T4", 720))
-data_plot <- data_long
-data_plot$Time <- times
-my_palette = c("#ffeda0", "#feb24c", "#fc4e2a", "#bd0026", "#800026")
-data_plot %>% group_by(cell_types) %>% ggplot(., aes(x = Time, y = proportion, fill = Time)) + 
-  geom_boxplot(outlier.colour = NA) +
-  geom_jitter(width = 0.15, alpha = 0.3) +
-  scale_fill_manual(values = my_palette) +
-  facet_wrap(~ cell_types, scales = "free_y") +
-  theme_bw() +
-  theme(legend.position = "bottom",
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size= 12, colour = "black"),
-        legend.key.size = unit(1, "cm"),
-        legend.title = element_text(size = 14, colour = "black"),
-        legend.text = element_text(size = 10)) +
-  labs(y = "Cell type proportion",
-       x = "Time")

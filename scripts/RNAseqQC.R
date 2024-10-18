@@ -106,15 +106,173 @@ ggplot(data = tpm.sex, aes(x = XIST, y = RPS4Y1, col = Sex)) + geom_point() +
 ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/samplecheck/Sex_check.pdf", width = 12, height = 12, dpi = 600)
 
 
-# Now onto boxplot
 
-tpm.long <- data.frame(tpm.mat)
+library(RNAseqQC)
+pheno <- rbind(coldata_0, coldata_1, coldata_2, coldata_3, coldata_4)
+sample <- rep(colnames(counts0), 5)
+pheno <- cbind(pheno, sample)
+head(pheno)
+tail(pheno)
+
+pheno <- as.data.frame(pheno)
+head(pheno)
+pheno$sample <- factor(pheno$sample, levels = rownames(coldata_0))
+colnames(pheno)[9] <- "Time"
+pheno$Time <- factor(pheno$Time, levels = c("T0", "T1", "T2", "T3", "T4"), labels = c("0","1","2","3","4"))
+
+dds <- DESeqDataSetFromMatrix(countData = edata, colData = pheno, design = ~ sample + Time)
+
+plot_library_complexity(dds)
+
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/Library_Complexity.pdf", width = 12, height = 12, dpi = 600)
+
+
+
+my_palette = c("#ffeda0", "#feb24c", "#fc4e2a", "#bd0026", "#800026")
+
+vst_dds <- vst(dds)
+pcaData <- plotPCA(vst_dds, intgroup = c("Time", "gender"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+pca_all <- ggplot(pcaData, aes(PC1, PC2, colour = Time, shape = gender)) +
+  geom_point() +
+  scale_colour_manual(values = my_palette ) + theme_bw() +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  ggtitle("All samples n = 240") +
+  theme(axis.title  = element_text(colour = "black"),
+        axis.title.x = element_text(colour = "black", size = 15),
+        axis.title.y = element_text(colour = "black", size = 15),
+        axis.text.x = element_text(colour = "black", size = 11),
+        legend.title = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11),
+        axis.text.y = element_text(colour = "black", size = 11)) 
+  
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/PCA_DESEQ2_ALL_samples.pdf", width = 12, height = 12, dpi = 600)
+
+
+colnames(coldata_0)
+
+# Timepoicoldata_0# Timepoint 0
+dds <- DESeqDataSetFromMatrix(countData = counts0, colData = coldata_0, design = ~ gender)
+vst_dds <- vst(dds)
+pcaData <- plotPCA(vst_dds, intgroup = c("Time0", "gender"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, colour = Time0, shape = gender)) +
+  geom_point(size = 3) +
+  scale_colour_manual(values = my_palette ) + theme_bw() +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  ggtitle("Timepoint 0 n = 48") +
+  theme(axis.title  = element_text(colour = "black"),
+        axis.title.x = element_text(colour = "black", size = 15),
+        axis.title.y = element_text(colour = "black", size = 15),
+        axis.text.x = element_text(colour = "black", size = 11),
+        legend.title = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11),
+        axis.text.y = element_text(colour = "black", size = 11)) 
+
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/PCA_DESEQ2_T0_samples.pdf", width = 12, height = 12, dpi = 600)
+# Timepoint 1
+dds <- DESeqDataSetFromMatrix(countData = counts1, colData = coldata_1, design = ~ gender)
+vst_dds <- vst(dds)
+pcaData <- plotPCA(vst_dds, intgroup = c("Time1", "gender"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, colour = Time0, shape = gender)) +
+  geom_point(size = 3) +
+  scale_colour_manual(values = "#feb24c") + theme_bw() +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  ggtitle("Timepoint 1, n = 48") +
+  theme(axis.title  = element_text(colour = "black"),
+        axis.title.x = element_text(colour = "black", size = 15),
+        axis.title.y = element_text(colour = "black", size = 15),
+        axis.text.x = element_text(colour = "black", size = 11),
+        legend.title = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11),
+        axis.text.y = element_text(colour = "black", size = 11)) 
+
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/PCA_DESEQ2_T1_samples.pdf", width = 12, height = 12, dpi = 600)
+
+# Timepoint 2
+dds <- DESeqDataSetFromMatrix(countData = counts2, colData = coldata_2, design = ~ gender)
+vst_dds <- vst(dds)
+pcaData <- plotPCA(vst_dds, intgroup = c("Time2", "gender"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, colour = Time0, shape = gender)) +
+  geom_point(size = 3) +
+  scale_colour_manual(values = "#fc4e2a") + theme_bw() +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  ggtitle("Timepoint 2, n = 48") +
+  theme(axis.title  = element_text(colour = "black"),
+        axis.title.x = element_text(colour = "black", size = 15),
+        axis.title.y = element_text(colour = "black", size = 15),
+        axis.text.x = element_text(colour = "black", size = 11),
+        legend.title = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11),
+        axis.text.y = element_text(colour = "black", size = 11)) 
+
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/PCA_DESEQ2_T2_samples.pdf", width = 12, height = 12, dpi = 600)
+
+
+# Timepoint 3
+dds <- DESeqDataSetFromMatrix(countData = counts3, colData = coldata_3, design = ~ gender)
+vst_dds <- vst(dds)
+pcaData <- plotPCA(vst_dds, intgroup = c("Time3", "gender"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, colour = Time0, shape = gender)) +
+  geom_point(size = 3) +
+  scale_colour_manual(values ="#bd0026") + theme_bw() +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  ggtitle("Timepoint 3, n = 48") +
+  theme(axis.title  = element_text(colour = "black"),
+        axis.title.x = element_text(colour = "black", size = 15),
+        axis.title.y = element_text(colour = "black", size = 15),
+        axis.text.x = element_text(colour = "black", size = 11),
+        legend.title = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11),
+        axis.text.y = element_text(colour = "black", size = 11))
+
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/PCA_DESEQ2_T3_samples.pdf", width = 12, height = 12, dpi = 600)
+
+
+# Timepoint 4
+dds <- DESeqDataSetFromMatrix(countData = counts4, colData = coldata_4, design = ~ gender)
+vst_dds <- vst(dds)
+pcaData <- plotPCA(vst_dds, intgroup = c("Time4", "gender"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, colour = Time0, shape = gender)) +
+  geom_point(size = 3) +
+  scale_colour_manual(values = "#800026") + theme_bw() +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  ggtitle("Timepoint 4, n = 48") +
+  theme(axis.title  = element_text(colour = "black"),
+        axis.title.x = element_text(colour = "black", size = 15),
+        axis.title.y = element_text(colour = "black", size = 15),
+        axis.text.x = element_text(colour = "black", size = 11),
+        legend.title = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11),
+        axis.text.y = element_text(colour = "black", size = 11))
+
+
+ggsave("/home/workspace/jogrady/heQTL/work/RNA_seq/QC/PCA_DESEQ2_T4_samples.pdf", width = 12, height = 12, dpi = 600)
+
+plotPCA(vst_dds, intgroup = c("Time", "gender"))
+
+
+tpm.long <- dadds = tpm.long <- data.frame(tpm.mat)
 tpm.long$Gene_ID <- rownames(tpm.long)
 dim(tpm.long)
 tpm.long <- pivot_longer(tpm.long, cols = 1:240,names_to = "Sample_ID", values_to = "TPM_counts", )
-tpm.long$Timepoint <- rep(c(rep("T0",48),rep("T1",48) ,rep("T2", 48),rep("T3", 48),rep("T4", 48)),
-View(tpm.long)
+tpm.long$Timepoint <- rep(c(rep("T0",48),rep("T1",48) ,rep("T2", 48),rep("T3", 48),rep("T4", 48)),62703)
 
+my_palette = c("#ffeda0", "#feb24c", "#fc4e2a", "#bd0026", "#800026")
+tpm.long$Fill <- rep(c(rep("#ffeda0", 48), rep("#feb24c", 48), rep("#fc4e2a", 48), rep("#bd0026", 48), rep("#800026",48)), 62703)
+
+ggplot(data = tpm.long, aes(y = log10(TPM_counts + 0.1), x = Sample_ID)) + geom_boxplot(width = 0.5, outlier.colour = NA) + facet_wrap(~Timepoint) +
+  theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 

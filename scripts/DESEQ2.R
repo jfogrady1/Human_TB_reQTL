@@ -303,6 +303,8 @@ listInput <- list(T0_V_T1_up = T0_V_T1_up$gene_name,
                   T0_V_T3_down =  T0_V_T3_down$gene_name,
                   T0_V_T4_down = T0_V_T4_down$gene_name)
 names(listInput)
+library("pals")
+library(RColorBrewer)
 pdf("/home/workspace/jogrady/heQTL/results/DESEQ2/Upset_DE_Genes_FDR0.05_lfc_0.2.pdf", width = 15, height = 12)
 upset(fromList(listInput), order.by = "freq", nintersects = 25, nsets = 10, sets = names(listInput), query.legend = "top",
      point.size = 4, line.size = 2,  text.scale = c(4, 2.5, 1, 1, 2, 2.5), keep.order = TRUE,sets.x.label = "DE genes", mainbar.y.label = "DE gene intersections", sets.bar.color = brewer.rdylbu(n=8),
@@ -314,8 +316,7 @@ upset(fromList(listInput), order.by = "freq", nintersects = 25, nsets = 10, sets
      query.name = "Consistently down")))
 dev.off()
 
-library("pals")
-library(RColorBrewer)
+
 
 T0_V_T2_up
 T0_V_T2_up_gprofiler <- T2 %>% filter(signif == TRUE) %>% 
@@ -342,12 +343,14 @@ T0_V_T4_down_gprofiler <- T4 %>% filter(signif == TRUE) %>%
   filter(diffexpressed == "DE Down") %>% 
   arrange(desc(padj)) %>% slice_min(., padj, n = 300)
 
-
+dds_1_V_0_lfc$gene_id
+dds_2_V_0_lfc$gene_id
 
 # Now onto Gprofiler
 library(gprofiler2)
 # order the query based on adjusted p value, to do this we will select the most significant association for common genes
 
+background <- dds_1_V_0_lfc$gene_name
 
 gostres_T2_up <- gost(T0_V_T2_up_gprofiler$gene_name,
 ordered_query = TRUE, 
@@ -416,7 +419,7 @@ gostres_T3_up_res$query <- "T3_V_T0_up"
 gostres_T3_down_res <- gostres_T3_down$result
 gostres_T3_down_res$query <- "T3_V_T0_down"
 
-View(gostres_T3_down_res)
+
 
 terms <- c("defense response",
            "innate immune response",
@@ -506,7 +509,7 @@ names(symbols_length)
 
 
 B = intersect(T1$gene_name, intersect(T2$gene_name, intersect(T3$gene_name, T4$gene_name)))
-
+B
 T1_intersect = T1 %>% filter(gene_name %in% B) %>% mutate(T0 = 0) %>% select(gene_name, T0, log2FoldChange)
 T2_intersect = T2 %>% filter(gene_name %in% B) %>% select(gene_name, log2FoldChange)
 T3_intersect = T3 %>% filter(gene_name %in% B) %>% select(gene_name, log2FoldChange)
@@ -564,94 +567,52 @@ ggplot(ALL_LFC, aes(x = Time, y = LFC, fill = Time, group = gene_name, label = L
 
 ggsave("/home/workspace/jogrady/heQTL/results/DESEQ2/LFC_tracking_contrasts.pdf", width = 12, height = 10)
 
-sort(runif(103, -2.5, 3))
-geom_text_s
-TPM_bulk = function(counts,lengths) {
-  # counts = count matrix of bulk data
-  # lenghts = vector of gene lenghts with names corresponding to gene names 
-  
-  # Intersect for common - cannot TPM normalise genes with no length information
-  A = intersect(rownames(counts),names(lengths))
-  counts = counts[A,]
-  print(head(counts))
-  lengths = lengths[A]
-  print(all(rownames(counts) == names(lengths)))
-  # Perform TPM normalisation
-  rate = counts/ lengths
-  apply(rate,2,function(x) 1e6*x/sum(x))
-  # return
-  return(rate)
-}
 
-#rownames(edata) <- gsub("\\..*", "", rownames(edata))
-
-# Perform TPM
-Counts_TPM <- TPM_bulk(counts = edata, lengths = symbols_length)
-
-
-# Get ids and names of 103 genes
-A = intersect(T1$gene_id, intersect(T2$gene_id, intersect(T3$gene_id, T4$gene_id)))
-B = intersect(T1$gene_name, intersect(T2$gene_name, intersect(T3$gene_name, T4$gene_name)))
-
-# Modify
-A <- gsub("\\..*", "", A)
-Counts_TPM <- Counts_TPM[A,]
-Counts_TPM <- cbind(Counts_TPM, B)
+genes_of_interest = c("BAK1",
+                      "SCARF1",
+                      "ICAM1",
+                      "LIMK1",
+                      "SEPT4",
+                      "FAM20A",
+                      "CD274",
+                      "NRN1",
+                      "IGF2BP3",
+                      "CASP5",
+                      "TIFA",
+                      "FCGR1A",
+                      "GBP5",
+                      "C1QC",
+                      "SDC3",
+                      "CDCP1",
+                      "C1QB",
+                      "P2RY14",
+                      "GRAMD1C",
+                      "GBP6",
+                      "SOCS3",
+                      "PRTN3",
+                      "PDCD1LG2",
+                      "FCGR1B",
+                      "GRIN3A",
+                      "GBP1P1",
+                      "FCGR1CP")
 
 
 
-Counts_TPM <- Counts_TPM %>% as.data.frame()
-head(Counts_TPM)
-
-rownames(Counts_TPM) <- Counts_TPM[,241]
-Counts_TPM <- Counts_TPM[,-c(241)]
-
-Counts_TPM <- as.data.frame(Counts_TPM)
-Counts_TPM$Gene <- rownames(Counts_TPM)
-
-
-genes <- T1[T1$gene_name %in% rownames(Counts_TPM),]
-genes
-genes <- genes %>% select(gene_name, diffexpressed) %>% as.data.frame()
-colnames(genes)[1] <- "Gene"
-
-Counts_TPM
-Counts_TPM <- cbind(Counts_TPM, genes$diffexpressed)
-
-colnames(Counts_TPM)
-
-Counts_TPM <-Counts_TPM %>% pivot_longer(cols = colnames(Counts_TPM)[1:240], names_to = "Patient", values_to = "Expression") 
-
-head(Counts_TPM)
-Counts_TPM$Time <- rep(c(rep(c("T0"), 48), rep(c("T1"), 48), rep(c("T2"), 48), rep(c("T3"), 48),rep(c("T4"), 48)), 103)
-
-
-colnames(Counts_TPM)[2] <- "diffexpressed"
-head(Counts_TPM)
-Counts_TPM %>% as.data.frame() %>% group_by(Gene, Time) %>% summarize(Median = log(median(as.numeric(Expression))),
-                                                  Mean = mean(as.numeric(Expression)),
-                                                  Lable = if_else((Time == "T4" & Patient == "P_3_T4"), Gene, NA)) %>% filter(is.na(Label)) %>% View()
-  ggplot(., aes(x = Time, y = Median, fill = Time, group = Gene), label = Gene) + geom_line(col = "black") + geom_point(shape = 21) + facet_wrap(~diffexpressed) + geom_label(label = label)
-
-
-
-head(Counts_TPM)
-rownames(edata_clean)
-rownames(edata)
-head(edata)
-View(Counts_TPM)
-
-save.image("DESEQ2.RData")
-
-load("DESEQ2.RData")
+B # my list
+genes_of_interest  # genes_of interest
+background # background
 
 
 
 
+A_fisher <- sum(B %in% genes_of_interest)                                # Genes in both identified and reference
+B_fisher <- sum((background %in% genes_of_interest) & !(background %in% B))  # In reference, not in identified
+C_fisher <- sum((background %in% B) & !(background %in% genes_of_interest))  # In identified, not in reference
+D_fisher <- length(background) - A_fisher - B_fisher - C_fisher  
 
 
-
-
+fisher_result <- fisher.test(matrix(c(A_fisher, B_fisher, C_fisher, D_fisher), nrow = 2), alternative = "greater")
+fisher_result
 
 
 

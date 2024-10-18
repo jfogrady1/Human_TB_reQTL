@@ -1169,8 +1169,8 @@ cis_window:
  1000000: '1000000'
  
 cell:
- NK_cell: "NK_cell"
- Memory_CD4+_T_cell: "Memory_CD4+_T_cell"
- Naive_B_cell: "Naive_B_cell"
  Classical_Monocyte: "Classical_Monocyte"
- Undefined_T_cell: "Undefined_T_cell" 
+ Memory_CD8+_T_cell: "Memory_CD8+_T_cell"
+ Naïve_B_cell: "Naïve_B_cell"
+ NK_cell: "NK_cell"
+ Non-classical_Monocyte: "Non-classical_Monocyte"

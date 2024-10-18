@@ -15,10 +15,12 @@ library(Biobase)
 library(data.table)
 library(Seurat)
 library(tidyr)
+library(tidyverse)
 library(SummarizedExperiment)
 library("SimBu")
 
-
+set.seed(4589)
+args = commandArgs(trailingOnly=TRUE)
 ################################################################################################################
 #### Goal to Generate this matrix for Pearson and RMSE #########################################################
 ##          Music_marker_raw   X      0      0
@@ -75,7 +77,7 @@ TPM_bulk = function(counts,lengths) {
 # Necessary files
 # Need to convert gene ids to gene symbols
 # Get in gene symbol information
-symbols <- fread("/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf") %>% filter(V3 == "gene") # select(V9)
+symbols <- fread(args[1]) %>% filter(V3 == "gene") # select(V9)
 symbols <- symbols %>% separate(V9, into = c("gene_id","gene_type","gene_name"), sep = ";")
 symbols$gene_id <- gsub('gene_id "', '', symbols$gene_id)
 symbols$gene_id <- gsub('"', '', symbols$gene_id)
@@ -96,16 +98,16 @@ names(lengths) = symbols$gene_name
 # Read in the single cell data
 
 # Read in marker genes)
-markers <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Conserved_Marker_genes.txt")
+markers <- fread(args[2])
 
-TB.sc.data = readRDS("~/heQTL/work/scRNA_seq/TB.combined.final.rds")
+TB.sc.data = readRDS(args[3])
 
 
 # We will first normalise by TPM and make a signature matrix for cibersort
 TB.sc.data.tpm = TPM_sc(counts = TB.sc.data, lengths = lengths)
 TB.sc.data.tpm@assays$RNA$counts <- TB.sc.data.tpm@assays$RNA$TPM # overrule the counts when converting to SCE object
 
-TB.sc.data.tpm@assays$RNA$counts
+
 TB.sc.data$cell_type <- Idents(TB.sc.data)
 # Average expression for all cell types
 Average_raw_expression = AverageExpression(
@@ -118,9 +120,10 @@ Average_raw_expression = AverageExpression(
   layer = "counts",
   verbose = TRUE)
 
+
 RAW_matrix <- as.matrix(Average_raw_expression$RNA)
 RAW_matrix <- RAW_matrix[rownames(RAW_matrix) %in% markers$gene,]
-
+head(RAW_matrix)
 
 TB.sc.data.tpm$cell_type <- Idents(TB.sc.data.tpm)
 Average_TPM_expression = AverageExpression(
@@ -134,10 +137,10 @@ Average_TPM_expression = AverageExpression(
   verbose = TRUE)
 TPM_matrix <- as.matrix(Average_TPM_expression$RNA)
 TPM_matrix <- TPM_matrix[rownames(TPM_matrix) %in% markers$gene,]
-
-
-write.table(TPM_matrix, file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/TPM_signature_matrix_Cibersort.txt", sep = "\t", quote = F, row.names = T)
-write.table(RAW_matrix, file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/RAW_signature_matrix_Cibersort.txt", sep = "\t", quote = F, row.names = T)
+head(RAW_matrix)
+head(TPM_matrix)
+write.table(TPM_matrix, file = args[4], sep = "\t", quote = F, row.names = T)
+write.table(RAW_matrix, file = args[5], sep = "\t", quote = F, row.names = T)
 
 # Remove for space
 rm(TB.sc.data.tpm)
@@ -158,7 +161,7 @@ ds <- SimBu::dataset(
   name = annotation$cell_type
 )
 
-set.seed(4589)
+
 
 # Perform simulation of bulk data
 simulation <- SimBu::simulate_bulk(
@@ -180,7 +183,7 @@ rownames(simulation$cell_fractions) <- c(paste0("Sample_", 1:100))
 
 # Look at plot
 SimBu::plot_simulation(simulation = simulation) + theme_bw() + theme(axis.text.y  = element_text(size = 0, angle = 0))
-ggsave("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Simbu_Simulation_Cell_Components.pdf", width = 12, height = 12, dpi = 600)
+ggsave(args[6], width = 12, height = 12, dpi = 600)
 
 
 # 3 
@@ -189,11 +192,11 @@ ggsave("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Simbu_Simulation_
 #pseudo <- read.table('/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.pseudobulk.txt')
 
 # convert to sce
-as.matrix(assays(simulation$bulk)[["bulk_counts"]])
+#as.matrix(assays(simulation$bulk)[["bulk_counts"]])
 bulk_sim <- as.matrix(assays(simulation$bulk)[["bulk_counts"]])
 
 # These are the raw counts
-bulk_sim
+#bulk_sim
 
 # These are the TPM counts
 bulk_TPM <- TPM_bulk(bulk_sim, lengths = lengths)
@@ -205,9 +208,9 @@ bulk_CPM <- edgeR::cpm(bulk_sim)
 
 
 # Write files
-write.table(bulk_CPM, file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Pseudobulk_CPM.txt", sep = "\t", quote = F)
-write.table(bulk_TPM, file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Pseudobulk_TPM.txt", sep = "\t", quote = F)
-write.table(bulk_sim, file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Pseudobulk_RAW.txt", sep = "\t", quote = F)
+write.table(bulk_CPM, file = args[7], sep = "\t", quote = F)
+write.table(bulk_TPM, file = args[8], sep = "\t", quote = F)
+write.table(bulk_sim, file = args[9], sep = "\t", quote = F)
 
 
 
@@ -220,7 +223,7 @@ pheno_pseudo <- as.data.frame(matrix(nrow = 100, ncol = 1))
 rownames(pheno_pseudo) <- colnames(simulation$TPM)
 pheno_pseudo$V1 <- rownames(pheno_pseudo)
 pseudo <- ExpressionSet(assayData = simulation$TPM, phenoData = AnnotatedDataFrame(pheno_pseudo))
-pseudo@assayData$exprs
+#pseudo@assayData$exprs
 pseudo.tpm.mtx <- exprs(pseudo)
 
 simulation$CPM <- bulk_CPM
@@ -228,14 +231,14 @@ pheno_pseudo <- as.data.frame(matrix(nrow = 100, ncol = 1))
 rownames(pheno_pseudo) <- colnames(simulation$CPM)
 pheno_pseudo$V1 <- rownames(pheno_pseudo)
 pseudo <- ExpressionSet(assayData = simulation$CPM, phenoData = AnnotatedDataFrame(pheno_pseudo))
-pseudo@assayData$exprs
+#pseudo@assayData$exprs
 pseudo.cpm.mtx <- exprs(pseudo)
 
 pheno_pseudo <- as.data.frame(matrix(nrow = 100, ncol = 1))
 rownames(pheno_pseudo) <- colnames(simulation$bulk)
 pheno_pseudo$V1 <- rownames(pheno_pseudo)
 pseudo <- ExpressionSet(assayData = as.matrix(assays(simulation$bulk)[["bulk_counts"]]), phenoData = AnnotatedDataFrame(pheno_pseudo))
-pseudo@assayData$exprs
+#pseudo@assayData$exprs
 pseudo.raw.mtx <- exprs(pseudo) # last pseudo needed for bisque
 
 
@@ -244,8 +247,8 @@ pseudo.cpm.mtx
 pseudo.tpm.mtx
 
 # Read in marker genes)
-markers <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Conserved_Marker_genes.txt")
-
+markers <- fread(args[2])
+head(markers)
 
 # set up results
 
@@ -268,6 +271,7 @@ colnames(RMSE) <- c("RAW", "TPM", "CPM")
 
 rownames(PEARSON) <- c("MuSIC_marker_raw", "NNLS_marker_raw", "music_raw", "NNLS_raw", "Bisque_marker", "Bisque_raw","Cibersort_Raw", "Cibersort_TPM")
 colnames(PEARSON) <- c("RAW", "TPM", "CPM")
+
 
 
 ####################################################################
@@ -480,7 +484,7 @@ P_Music_no_marker
 markers_bisque <- markers[,c(15,14,7)]
 head(markers)
 colnames(markers_bisque) <- c("gene", "cluster", "avg_logFC")
-
+head(markers_bisque)
 sc.eset <- BisqueRNA::SeuratToExpressionSet(TB.sc.data, delimiter="_", position=2, version="v3") # USE TPM again
 
 
@@ -571,13 +575,12 @@ tail(music_no_marker_results_long,15)
 tail(nnls_no_marker_results_long, 15)
 
 # Look at cibersort results
-head(Ciber_RAW_RAW)
-Ciber_RAW_RAW <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_RAW_RAW.txt") %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
-Ciber_RAW_TPM <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_RAW_TPM.txt") %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
-Ciber_RAW_CPM <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_RAW_CPM.txt") %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
-Ciber_TPM_RAW <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_TPM_RAW.txt") %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
-Ciber_TPM_TPM <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_TPM_TPM.txt") %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
-Ciber_TPM_CPM <- fread("/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_TPM_CPM.txt") %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
+Ciber_RAW_RAW <- fread(args[10]) %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
+Ciber_RAW_TPM <- fread(args[11]) %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
+Ciber_RAW_CPM <- fread(args[12]) %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
+Ciber_TPM_RAW <- fread(args[13]) %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
+Ciber_TPM_TPM <- fread(args[14]) %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
+Ciber_TPM_CPM <- fread(args[15]) %>% as.data.frame() %>% dplyr::select(-c("RMSE", "Correlation", "P-value"))
 
 head(Ciber_RAW_RAW)
 head(Ciber_RAW_CPM)
@@ -614,7 +617,7 @@ Ciber_RAW_RAW_df <- RESULTS %>% group_by(cell_types) %>% dplyr::summarise(RMSE =
 Ciber_RAW_TPM_df <- RESULTS %>% group_by(cell_types) %>% dplyr::summarise(RMSE = sqrt(mean((Ciber_RAW_TPM_observed - ground_truth)^2)) %>% round(.,3), 
                                                                           Pearson = cor(Ciber_RAW_TPM_observed, ground_truth) %>% round(.,3),
                                                                           MAD = mean(abs(Ciber_RAW_TPM_observed - ground_truth)) %>% round(.,3))
-
+Ciber_RAW_RAW
 
 Ciber_RAW_TPM_df$Pearson <- if_else(is.na(Ciber_RAW_TPM_df$Pearson),true = -1, false = Ciber_RAW_TPM_df$Pearson)
 
@@ -656,10 +659,10 @@ rownames(PEARSON)[7] <- "Cibersort_RAW"
 rownames(PEARSON)[8] <- "Cibersort_TPM"
 
 PEARSON
-pdf(file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Benchmark_heatmap.pdf", width = 12, height = 12)
+pdf(file = args[16], width = 12, height = 12)
 ComplexHeatmap::pheatmap(RMSE_inverse, display_numbers = T, color = colorRampPalette(c('white','red'))(100), cluster_rows = F, cluster_cols = F, fontsize_number = 15)
 dev.off()
-pdf(file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Benchmark_heatmap_pearson.pdf", width = 12, height = 12)
+pdf(file = args[17], width = 12, height = 12)
 ComplexHeatmap::pheatmap(PEARSON, display_numbers = T, color = colorRampPalette(c('blue', 'white', "red"))(100), cluster_rows = F, cluster_cols = F, fontsize_number = 15)
 dev.off()
 
@@ -671,6 +674,7 @@ P_Music_no_marker
 P_bisque_marker
 P_bisque_no_marker
 
+library(cowplot)
 prow <- plot_grid(
   P_NNLS_marker + theme(legend.position="none"),
   P_NNLS_no_marker + theme(legend.position="none"),
@@ -701,7 +705,7 @@ legend <- get_legend(
 p_tpm <- plot_grid(prow, legend, ncol = 1, rel_heights = c(1, 0.1))
 p_tpm
 
-ggsave(plot = p_tpm, filename = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Pseudo_Benchmark_raw.png", width = 12, height = 12, dpi = 600)
+ggsave(plot = p_tpm, filename = args[18], width = 12, height = 12, dpi = 600)
 
 
 
@@ -830,7 +834,7 @@ legend <- get_legend(
 p_tpm <- plot_grid(prow, legend, ncol = 1, rel_heights = c(1, 0.1))
 
 p_tpm
-ggsave(plot = p_tpm, filename = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Pseudo_Benchmark_Cibersort_raw.pdf", width = 12, height = 12, dpi = 600)
+ggsave(plot = p_tpm, filename = args[19], width = 12, height = 12, dpi = 600)
 
 
 
@@ -853,8 +857,8 @@ RESULTS_cibersort_RAW_CPM %>% ggplot(., aes(x = Ciber_RAW_CPM_observed, y = grou
   geom_text(data = RESULTS_cibersort_RAW_CPM_values, aes(x = 0.2, y = 0.32, label = paste0(" Pearson = ",Pearson), color = NULL,group= NULL)) +
   theme(legend.position="none")
   
-ggsave(filename = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Benchmark_Cibersort_all_celltypes_RAW_CPM.pdf", width = 12, height = 12, dpi = 600)
+ggsave(filename = args[20], width = 12, height = 12, dpi = 600)
 
 
-write.table(RESULTS, file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/ALL_benchmark_results.text", sep = "\t", quote = FALSE)
+write.table(RESULTS, file = args[21], sep = "\t", quote = FALSE)
 
