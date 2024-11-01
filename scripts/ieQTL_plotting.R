@@ -219,7 +219,7 @@ ieQTL_plot <- function(gene, variant, gene_name, hom_ref, het, hom_alt, cell_typ
 }
 
 NOD2_CM <- ieQTL_plot(variant = "16:50652646:A:C", gene = "ENSG00000167207.15", gene_name = "NOD2", hom_ref = "A", het = "A:C", hom_alt = "C:C", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
-NOD2_CM + theme_bw() + labs(y = "Normalised NOD2 expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:\n16:50652646:A:C") +
+NOD2_CM + theme_bw() + labs(y = "Residualised NOD2 expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:\n16:50652646:A:C") +
 theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
     axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
     axis.title.y = element_text(size = 21, color = "black"),
@@ -229,12 +229,11 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
     legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
     scale_colour_viridis(discrete = TRUE)
 
-ggsave("")
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/NOD2_Classical_Monocyte_example_ieQTL.pdf", width = 12, height = 12, dpi = 600)
 
 
-
-IL7R_CM <-  ieQTL_plot(variant = "5:35875125:G:A", gene = "ENSG00000168685.15", gene_name = "IL7R", hom_ref = "G", het = "G:A", hom_alt = "A:A", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
-IL7R_CM + theme_bw() + labs(y = "Normalised IL7R expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:\n5:35875125:G:A") +
+ATG4B <-  ieQTL_plot(variant = "2:241678377:A:G", gene = "ENSG00000168397.17", gene_name = "ATG4B", hom_ref = "A", het = "A:G", hom_alt = "G:G", cell_type = "Non-classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
+ATG4B + theme_bw() + labs(y = "Residualised ATG4B expression", x = "Normalised non-classical monocyte proportion", colour = "Genotype:\n2:241678377:A:G") +
 theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
     axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
     axis.title.y = element_text(size = 21, color = "black"),
@@ -244,21 +243,5 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
     legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
     scale_colour_viridis(discrete = TRUE)
 
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/ATG4B_Non_Classical_Monocyte_example_ieQTL.pdf", width = 12, height = 12, dpi = 600)
 
-
-
-TFR2
-TFR2_Classical_Monocyte <- TFR2 + theme_bw() + labs(y = "Normalised NLRC4 expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:2:32236868:A:AAAAG") +
-theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
-    axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
-    axis.title.y = element_text(size = 21, color = "black"),
-    panel.grid.minor = element_blank(),
-    legend.title = element_text(size = 12, color = "black"),
-    legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
-    scale_colour_viridis(discrete = TRUE)
-
-TFR2_Classical_Monocyte
-library(grid)
-
-grid.draw(shift_legend(RIPOR2_NK_cell))
-ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/NLRC4_Classical_Monocyte_example_ieQTL.pdf", width = 12, height = 12)
