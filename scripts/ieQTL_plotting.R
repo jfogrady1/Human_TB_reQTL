@@ -229,7 +229,7 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
     legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
     scale_colour_viridis(discrete = TRUE)
 
-ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/NOD2_Classical_Monocyte_example_ieQTL.pdf", width = 12, height = 12, dpi = 600)
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/NOD2_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
 
 
 ATG4B <-  ieQTL_plot(variant = "2:241678377:A:G", gene = "ENSG00000168397.17", gene_name = "ATG4B", hom_ref = "A", het = "A:G", hom_alt = "G:G", cell_type = "Non-classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
@@ -243,5 +243,5 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
     legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
     scale_colour_viridis(discrete = TRUE)
 
-ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/ATG4B_Non_Classical_Monocyte_example_ieQTL.pdf", width = 12, height = 12, dpi = 600)
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/ATG4B_Non_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
 
