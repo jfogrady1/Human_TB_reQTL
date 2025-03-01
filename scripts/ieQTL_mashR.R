@@ -540,27 +540,42 @@ write.table(final_merged_df_write, file = args[8], sep = "\t", row.names = FALSE
 colnames(final_merged_df)[24] <- "Timepoint_most_significant"
 final_merged_df <- final_merged_df %>% select(1,2,3,4,5,6,25,7:24)
 
-final_merged_df_mtb_private <- final_merged_df %>% group_by(gene_name, cell, pval_gi, LFSR) %>% select(c(1:10)) %>% summarise(
-  T0 = if_else(Timepoint == "T0" & LFSR < 0.01, TRUE, FALSE),
-  T1 = if_else(Timepoint == "T1" & LFSR < 0.01, TRUE, FALSE),
-  T2 = if_else(Timepoint == "T2" & LFSR < 0.01, TRUE, FALSE),
-  T3 = if_else(Timepoint == "T3" & LFSR < 0.01, TRUE, FALSE),
-  T4 = if_else(Timepoint == "T4" & LFSR < 0.01, TRUE, FALSE),
-  Term = Term, variant_id = variant_id, phenotype_id = phenotype_id, pval_gi = pval_gi, LFSR = LFSR) %>% filter(T0 == TRUE & T1 == FALSE & T2 == FALSE & T3 == FALSE & T4 == FALSE)
+final_merged_df_mtb_private <- final_merged_df %>%
+  group_by(variant_id, gene_name, cell, phenotype_id, pval_gi) %>%  # Grouping by unique identifiers
+  summarise(
+    T0 = any(Timepoint == "T0" & LFSR < 0.01),
+    T1 = any(Timepoint == "T1" & LFSR < 0.01),
+    T2 = any(Timepoint == "T2" & LFSR < 0.01),
+    T3 = any(Timepoint == "T3" & LFSR < 0.01),
+    T4 = any(Timepoint == "T4" & LFSR < 0.01),
+    Term = first(Term), 
+    LFSR = first(LFSR)  # Keeping one LFSR value per variant
+  ) %>%
+  filter(T0 == TRUE & T1 == FALSE & T2 == FALSE & T3 == FALSE & T4 == FALSE) %>%  # Keep only T0-only variants
+  ungroup()
+
+# View result
+print(final_merged_df_mtb_private)
 
 write.table(final_merged_df_mtb_private, file = args[9], sep = "\t", row.names = FALSE, quote = FALSE)
 
 
 
-final_merged_df_treat_private <- final_merged_df %>% group_by(gene_name, cell) %>% summarise(
-  T0 = if_else(Timepoint == "T0" & LFSR < 0.01, TRUE, FALSE),
-  T1 = if_else(Timepoint == "T1" & LFSR < 0.01, TRUE, FALSE),
-  T2 = if_else(Timepoint == "T2" & LFSR < 0.01, TRUE, FALSE),
-  T3 = if_else(Timepoint == "T3" & LFSR < 0.01, TRUE, FALSE),
-  T4 = if_else(Timepoint == "T4" & LFSR < 0.01, TRUE, FALSE)) %>% filter(T0 == FALSE)
+final_merged_df_treat = final_merged_df %>%
+  group_by(variant_id, gene_name, cell, phenotype_id, pval_gi) %>%
+  summarise(
+    T0 = any(Timepoint == "T0" & LFSR < 0.01),
+    T1 = any(Timepoint == "T1" & LFSR < 0.01),
+    T2 = any(Timepoint == "T2" & LFSR < 0.01),
+    T3 = any(Timepoint == "T3" & LFSR < 0.01),
+    T4 = any(Timepoint == "T4" & LFSR < 0.01),
+    Term = first(Term),
+    LFSR = first(LFSR)
+  ) %>%
+  filter(T0 == FALSE & (T1 == TRUE & T2 == TRUE & T3 == TRUE & T4 == TRUE)) %>%
+  ungroup()
 
-
-
+write.table(final_merged_df_treat, file = args[10], sep = "\t", row.names = FALSE, quote = FALSE)
 
 
 
@@ -600,6 +615,6 @@ pdensity
 # 3. Align the two plots and then overlay them.
 aligned_plots <- align_plots(phist, pdensity, align="hv", axis="tblr")
 ggdraw(aligned_plots[[1]]) + draw_plot(aligned_plots[[2]])
-ggsave(args[10], width = 12, height = 8, dpi = 600)
+ggsave(args[11], width = 12, height = 8, dpi = 600)
 
-save.image(file=args[11])
+save.image(file=args[12])

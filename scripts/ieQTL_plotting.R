@@ -8,7 +8,7 @@ library(gtable)
 library(cowplot)
 library(viridis)
 
-
+# Fixed cell type residualisation.
 load('/home/workspace/jogrady/heQTL/results/ieQTLs/ieQTL_MASHR.RData')
 
 
@@ -92,31 +92,31 @@ vcf_filter <- vcf_filter %>% pivot_longer(names_to = "Mixture", values_to = "Gen
 ieQTL_plot <- function(gene, variant, gene_name, hom_ref, het, hom_alt, cell_type, groups = c("T0", "T1", "T2", "T3", "T4")) {
   # SERPINB9 gene is interesting
   # Variant = 6:25066467:G:T
-  counts0 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T0_residualised_expression.txt") %>% select(5,7:54) %>% as.matrix()
+  counts0 <- fread(paste0("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T0_",cell_type,"_residualised_expression.txt")) %>% select(5,7:54) %>% as.matrix()
   rownames(counts0) <- counts0[,1]
   counts0 <- as.matrix(counts0[,-1])
 
 
 
-  counts1 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T1_residualised_expression.txt") %>% select(5,7:54) %>% as.matrix()
+  counts1 <- fread(paste0("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T1_",cell_type,"_residualised_expression.txt")) %>% select(5,7:54) %>% as.matrix()
   rownames(counts1) <- counts1[,1]
   counts1 <- as.matrix(counts1[,-1])
 
 
 
-  counts2 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T2_residualised_expression.txt") %>% select(5,7:54) %>% as.matrix()
+  counts2 <- fread(paste0("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T2_",cell_type,"_residualised_expression.txt")) %>% select(5,7:54) %>% as.matrix()
   rownames(counts2) <- counts2[,1]
   counts2 <- as.matrix(counts2[,-1])
 
 
 
-  counts3 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T3_residualised_expression.txt") %>% select(5,7:54) %>% as.matrix()
+  counts3 <- fread(paste0("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T3_",cell_type,"_residualised_expression.txt")) %>% select(5,7:54) %>% as.matrix()
   rownames(counts3) <- counts3[,1]
   counts3 <- as.matrix(counts3[,-1])
 
 
 
-  counts4 <- fread("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T4_residualised_expression.txt") %>% select(5,7:54) %>% as.matrix()
+  counts4 <- fread(paste0("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/T4_",cell_type,"_residualised_expression.txt")) %>% select(5,7:54) %>% as.matrix()
   rownames(counts4) <- counts4[,1]
   counts4 <- as.matrix(counts4[,-1])
 
@@ -214,7 +214,8 @@ ieQTL_plot <- function(gene, variant, gene_name, hom_ref, het, hom_alt, cell_typ
   if (length(groups) > 1) {
     print(TRUE)
     p + facet_wrap(~Time, nrow = 1)
-  }
+  }Bornin2013
+  
   return(p)
 }
 

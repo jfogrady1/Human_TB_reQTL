@@ -23,8 +23,12 @@ library(vcfR)
 library(rstatix)
 set.seed(34567)
 
-
-
+#args[1] <- "T0"
+#args[2] <- "T1"
+#args[3] <- "T2"
+#args[4] <- "T3"
+#args[5] <- "T4"
+#args[6] <- "home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf"
 
 ##### Define functions for and opening necessary files
 
@@ -346,33 +350,51 @@ mashr_visualisation <- rbind(merged_se, merged_beta)
 # Check to see variance and median effect of both distributions before and after applying MASHR
 #######################################
 
-Mahsh_r_plot <- mashr_visualisation %>% ggplot(aes(x = Timepoint, y = slope_se)) + geom_boxplot(aes(fill = factor(Method, levels = c("Original", "MASHR")))) + facet_wrap(~Metric, scales = "free_y", nrow = 2) + labs(y = "Value", x = "Timepoint", fill = "Method")
+head(merged_beta)
+
+Mahsh_r_plot <- merged_beta %>% ggplot(aes(x = Timepoint, y = slope_se)) + geom_boxplot(aes(fill = factor(Method, levels = c("Original", "MASHR")), )) + labs(y = "TensorQTL effect size / mashR posterior mean effect size", x = "Timepoint", fill = "Method") + theme_bw() + scale_y_continuous(limits = c(-3,3), breaks = c(-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5)) +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black", face = "bold"),
+        axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+        axis.title.y = element_text(size = 21, color = "black", face = "bold"),
+        panel.grid.minor = element_blank(),
+        legend.title = element_text(size = 15, color = "black", face = "bold"),
+        legend.text = element_text(size = 15)) + scale_fill_manual(values = c("#762a83", "#1b7837")) # Stat compare means doesn't do F test, see below for P values
 Mahsh_r_plot
 
-length(T0_se$slope_se)
-length(new_se_T0$slope_se)
-
-t.test(T0_se$slope_se, new_se_T0$slope_se, paired = TRUE, alternative = "two.sided") # t = 172.22, df = 15108, p-value < 2.2e-16
-var.test(T0_beta$slope, new_effect_T0$slope, paired = TRUE, alternative = "two.sided") #t = 5.0517, df = 15108, p-value = 4.43e-07
-var(T0_beta$slope)
-var(new_effect_T0$slope)
+ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/MashR_effect_size_no.pdf", width = 12, height = 8, dpi = 600)
 
 
-t.test(T1_se$slope_se, new_se_T1$slope_se, paired = TRUE, alternative = "two.sided") # t = 161.58, df = 15108, p-value < 2.2e-16
-t.test(T1_beta$slope, new_effect_T1$slope, paired = TRUE, alternative = "two.sided") # t = 4.3984, df = 15108, p-value = 1.098e-05
+Mahsh_r_plot <- merged_se %>% ggplot(aes(x = Timepoint, y = slope_se)) + geom_boxplot(aes(fill = factor(Method, levels = c("Original", "MASHR")), )) + labs(y = "TensorQTL effect size / mashR posterior mean effect size", x = "Timepoint", fill = "Method") + theme_bw() + scale_y_continuous(limits = c(0,1.25), breaks = c(0,0.25,0.5,0.75,1,1.25)) +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black", face = "bold"),
+        axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+        axis.title.y = element_text(size = 21, color = "black", face = "bold"),
+        panel.grid.minor = element_blank(),
+        legend.title = element_text(size = 15, color = "black", face = "bold"),
+        legend.text = element_text(size = 15)) + scale_fill_manual(values = c("#762a83", "#1b7837")) + stat_compare_means(aes(group = Method), method = "t.test", paired = TRUE)
+Mahsh_r_plot
+
+ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/MashR_se_pvalue.pdf", width = 12, height = 8, dpi = 600)
+t.test(T0_beta$slope, new_effect_T0$slope, paired = TRUE)
 
 
-t.test(T2_se$slope_se, new_se_T2$slope_se, paired = TRUE, alternative = "two.sided") # t = 172.22, df = 15108, p-value < 2.2e-16
-t.test(T2_beta$slope, new_effect_T2$slope, paired = TRUE, alternative = "two.sided") # t = 4.3984, df = 15108, p-value = 1.098e-05
+t.test(T0_se$slope_se, new_se_T0$slope_se, paired = TRUE, alternative = "two.sided") 
+var.test(T0_beta$slope, new_effect_T0$slope, paired = TRUE, alternative = "two.sided") 
 
 
-t.test(T3_se$slope_se, new_se_T3$slope_se, paired = TRUE, alternative = "two.sided") # t = 172.22, df = 15108, p-value < 2.2e-16
-t.test(T3_beta$slope, new_effect_T3$slope, paired = TRUE, alternative = "two.sided") # t = 4.3984, df = 15108, p-value = 1.098e-05
+t.test(T1_se$slope_se, new_se_T1$slope_se, paired = TRUE, alternative = "two.sided") 
+var.test(T1_beta$slope, new_effect_T1$slope, paired = TRUE, alternative = "two.sided") 
 
 
-t.test(T4_se$slope_se, new_se_T4$slope_se, paired = TRUE, alternative = "two.sided") # t = 172.22, df = 15108, p-value < 2.2e-16
-t.test(T4_beta$slope, new_effect_T4$slope, paired = TRUE, alternative = "two.sided") # t = 4.3984, df = 15108, p-value = 1.098e-05
+t.test(T2_se$slope_se, new_se_T2$slope_se, paired = TRUE, alternative = "two.sided") 
+var.test(T2_beta$slope, new_effect_T2$slope, paired = TRUE, alternative = "two.sided") 
 
+
+t.test(T3_se$slope_se, new_se_T3$slope_se, paired = TRUE, alternative = "two.sided")
+var.test(T3_beta$slope, new_effect_T3$slope, paired = TRUE, alternative = "two.sided") 
+
+
+t.test(T4_se$slope_se, new_se_T4$slope_se, paired = TRUE, alternative = "two.sided")
+var.test(T4_beta$slope, new_effect_T4$slope, paired = TRUE, alternative = "two.sided")
 
 
 
