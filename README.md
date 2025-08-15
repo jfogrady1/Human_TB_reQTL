@@ -27,3 +27,8 @@ The functional impact of genomic regulatory variation during active TB disease a
 ### Additional Data
 
 Filtered and imputed variants for all n = 48 samples, as well as the raw cis-eQTL, reQTL, and ieQTL results, will be made publicly available upon publication of this study.
+
+---
+## Citation
+
+O’Grady, J.F., Leonard, A.S., Li, H., Fang, L., Pausch, H., Gormley, I.C., Gordon, S.V., MacHugh, D.E. Genetic control of the transcriptional response to active tuberculosis disease and treatment [Preprint]. (2025) bioRxiv, 2025.04.11.648383. https://doi.org/10.1101/2025.04.11.648383. 
