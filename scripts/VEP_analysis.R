@@ -14,8 +14,9 @@ library(ggplot2)
 # install.packages("dplyr")
 library(dplyr) # Also needed
 
-data = read.table("/home/workspace/jogrady/heQTL/software/ensembl-vep/VEP_human_analysis.txt")
-vcf = read.vcfR("/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/DV_IMPUTED_R0.6_filtered.vcf.gz")
+args = commandArgs(trailingOnly = TRUE  )
+data = read.table(args[1])
+vcf = read.vcfR(args[2])
 
 variant_info = data.frame(vcf@fix)
 
@@ -66,7 +67,6 @@ test = data %>%
   mutate(freq = n / sum(n), .groups = "drop") %>% arrange(desc(freq)) %>% mutate(Levs = factor(New_ID),
                                                                Levs = fct_reorder(New_ID, freq, .desc = TRUE))
 test$Levs
-View(test)
 
 test$New_ID <- factor(test$New_ID)
 test$New_ID
@@ -84,33 +84,4 @@ ggplot(test, aes(x = Imputed, y = (freq * 100), fill = Levs, label = round(freq 
           axis.title.x = element_text(size = 18, color = "black"),
           legend.text = element_text(size = 15),
           legend.title = element_text(size = 15, colour = "black", face = "bold"))
-ggsave("/home/workspace/jogrady/heQTL/results/eQTL/results/Variant_location_called_V_Imputed.pdf", width = 12, height = 15, dpi = 600)
-
-
-
-head(test)
-
-
-
-df <- mtcars %>%
-  make_long(cyl, vs, am, gear, carb)
-
-View(df)
-
-ggplot(df, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
-  geom_sankey(flow.alpha = .6,
-              node.color = "gray30") +
-  geom_sankey_label(size = 3, color = "white", fill = "gray40") +
-  scale_fill_viridis_d(drop = FALSE) +
-  theme_sankey(base_size = 18) +
-  labs(x = NULL) +
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = .5)) +
-  ggtitle("Car features")
-data datadata <- data %>% filter(CANONICAL == "YES" | Consequence == "intergenic_variant")
-
-
-data$Consequence <- gsub(",.*", "", data$Consequence)
-
-
-library(networkD3)
+ggsave(args[3], width = 12, height = 15, dpi = 600)
