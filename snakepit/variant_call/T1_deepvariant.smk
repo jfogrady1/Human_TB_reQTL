@@ -41,11 +41,11 @@ BAM_EXT = config.get('bam_index','.bai')
 rule deepvariant_make_examples_T1:
     input:
         reference = multiext(config['reference'],'','.fai'),
-        bam = lambda wildcards: multiext(f'/home/workspace/jogrady/heQTL/work/RNA_seq/align/T1/{config["samples_1"][wildcards.sample]}','','.bai')
+        bam = lambda wildcards: multiext(f'work/RNA_seq/align/T1/{config["samples_1"][wildcards.sample]}','','.bai')
     output:
-        examples = temp('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/make_examples.tfrecord-{N}-of-{sharding}.gz'),
-        gvcf = temp('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/gvcf.tfrecord-{N}-of-{sharding}.gz'),
-        info = temp('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/make_examples.tfrecord-{N}-of-{sharding}.gz.example_info.json')
+        examples = temp('work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/make_examples.tfrecord-{N}-of-{sharding}.gz'),
+        gvcf = temp('work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/gvcf.tfrecord-{N}-of-{sharding}.gz'),
+        info = temp('work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/make_examples.tfrecord-{N}-of-{sharding}.gz.example_info.json')
     params:
         examples = lambda wildcards, output: PurePath(output['examples']).with_suffix('').with_suffix(f'.tfrecord@{config["shards"]}.gz'),
         gvcf = lambda wildcards, output: PurePath(output['gvcf']).with_suffix('').with_suffix(f'.tfrecord@{config["shards"]}.gz'),
@@ -84,9 +84,9 @@ def get_checkpoint(model):
 
 rule deepvariant_call_variants_T1:
     input:
-        expand('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/make_examples.tfrecord-{N}-of-{sharding}.gz',sharding=f'{config["shards"]:05}',N=[f'{i:05}' for i in range(config['shards'])],allow_missing=True)
+        expand('work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/make_examples.tfrecord-{N}-of-{sharding}.gz',sharding=f'{config["shards"]:05}',N=[f'{i:05}' for i in range(config['shards'])],allow_missing=True)
     output:
-        temp('/home/workspace/jogrady/heQTL/work/RNA_seq/varaint_call/T1/deepvariant/intermediate_results_{sample}_{region}/call_variants_output.tfrecord.gz')
+        temp('work/RNA_seq/varaint_call/T1/deepvariant/intermediate_results_{sample}_{region}/call_variants_output.tfrecord.gz')
     params:
         examples = lambda wildcards,input: PurePath(input[0]).with_suffix('').with_suffix(f'.tfrecord@{config["shards"]}.gz'),
         model = get_checkpoint(config['model'])
@@ -109,10 +109,10 @@ rule deepvariant_postprocess_T1:
     input:
         reference = multiext(config['reference'],'','.fai'),
         variants = rules.deepvariant_call_variants_T1.output[0],
-        gvcf = expand('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/gvcf.tfrecord-{N}-of-{sharding}.gz',sharding=f'{config["shards"]:05}',N=[f'{i:05}' for i in range(config['shards'])],allow_missing=True)
+        gvcf = expand('work/RNA_seq/variant_call/T1/deepvariant/intermediate_results_{sample}_{region}/gvcf.tfrecord-{N}-of-{sharding}.gz',sharding=f'{config["shards"]:05}',N=[f'{i:05}' for i in range(config['shards'])],allow_missing=True)
     output:
-        vcf = multiext('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.vcf.gz','','.tbi'),
-        gvcf = multiext('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.g.vcf.gz','','.tbi')
+        vcf = multiext('work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.vcf.gz','','.tbi'),
+        gvcf = multiext('work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.g.vcf.gz','','.tbi')
     params:
         gvcf = lambda wildcards,input: PurePath(input.gvcf[0]).with_suffix('').with_suffix(f'.tfrecord@{config["shards"]}.gz')
     threads: 1
@@ -142,10 +142,10 @@ def get_GL_config(preset):
 
 rule GLnexus_merge_T1:
     input:
-        gvcfs = expand('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.g.vcf.gz',sample=cohort_samples, region = config["regions"], allow_missing=True),
-        tbi = expand('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.g.vcf.gz.tbi',sample=cohort_samples, region = config["regions"], allow_missing=True)
+        gvcfs = expand('work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.g.vcf.gz',sample=cohort_samples, region = config["regions"], allow_missing=True),
+        tbi = expand('work/RNA_seq/variant_call/T1/deepvariant/{sample}.{region}.g.vcf.gz.tbi',sample=cohort_samples, region = config["regions"], allow_missing=True)
     output:
-        multiext('/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1/{region}.{preset}.vcf.gz','','.tbi')
+        multiext('work/RNA_seq/variant_call/T1/{region}.{preset}.vcf.gz','','.tbi')
     params:
         preset = lambda wildcards: get_GL_config(wildcards.preset),
         mem = lambda wildcards,threads,resources: threads*resources['mem_mb']/1024
