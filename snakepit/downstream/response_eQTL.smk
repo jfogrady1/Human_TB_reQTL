@@ -1,6 +1,6 @@
 autosomes = [str(i) for i in range(1, 23)]
-rule all:
-     input:
+#rule all:
+ #    input:
         #expand('work/RNA_seq/quantification/Normalised_counts_{timepoint}_qtltools.bed.gz', timepoint = config["TIME"]),
         #expand('data/covariate/{timepoint}_eqtlcovs_qtltools.txt', timepoint = config["TIME"]),
         #expand("work/RNA_seq/quantification/{timepoint}_residualised_expression.txt", timepoint = config["TIME"]),
@@ -39,7 +39,7 @@ rule edit_covariates:
         '''
 
 
-rule extract_residuals:
+rule extract_residuals_response_eQTL:
     input:
         bed = multiext('work/RNA_seq/quantification/Normalised_counts_{timepoint}_qtltools.bed', ".gz", ".gz.tbi"), # Phenotypes
         covariates_file='data/covariate/{timepoint}_eqtlcovs_qtltools.txt'
