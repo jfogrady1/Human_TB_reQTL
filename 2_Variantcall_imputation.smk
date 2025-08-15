@@ -85,12 +85,4 @@ rule all:
         expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_1"]),
         expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_2"]),
         expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_3"]),
-        expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_4"]),
-        #WASP (one sample only)
-        "work/RNA_seq/align/T1/WASP/DV_snp_tab.h5",
-        "work/RNA_seq/align/T1/WASP/intersecting_snps/SRR12609781.keep.bam",
-        'work/RNA_seq/align/T1/WASP/map2/SRR12609781.sort.bam',
-        "work/RNA_seq/align/T1/WASP/filter_remapped/SRR12609781.keep.bam",
-        "work/RNA_seq/align/T1/WASP/merge/SRR12609781.keep.merge.sort.bam",
-        "work/RNA_seq/align/T1/WASP/dup_filtered/sorted/SRR12609781.keep.merge.sort.no_dups.bam",
-        "work/RNA_seq/align/T1/WASP/dup_filtered/sorted/SRR12609781.mbv_output.txt"
+        expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_4"])
