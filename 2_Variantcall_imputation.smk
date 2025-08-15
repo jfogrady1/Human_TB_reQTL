@@ -23,7 +23,6 @@ include: 'snakepit/variant_call/giab_comparison.smk'
 include: 'snakepit/variant_call/imputation.smk'
 include: 'snakepit/variant_call/imputation_QC.smk'
 include: 'snakepit/variant_call/sample_mismatch_eQTL.smk'
-include: 'snakepit/variant_call/WASP_mapping_filtering.smk'
 
 
 
