@@ -154,3 +154,21 @@ rule density_plot:
 
         Rscript {input.script} work/DNA_seq/imputation/final/snp_density.txt {output.plot} {output.zoom1} {output.zoom2} 
         '''
+rule vep:
+    input:
+        vep = 'software/enembl-vep/vep',
+        vcf = 'work/DNA_seq/imputation/final/DV_IMPUTED_R0.6_filtered.vcf.gz',
+
+    output:
+        vep = 'software/enembl-vep/VEP_human_analysis.txt'
+    shell:
+        '''
+        {input.vep} -i  {input.vcf}  -o VEP_human_analysis.txt --offline -force_overwrite --canonical --symbol --tab --pick --fields Uploaded_variation,SYMBOL,Feature,Feture_type,Consequence,cDNA_position,CANONICAL
+        '''
+rule vep_plot:
+    input:
+        vcf = 'work/DNA_seq/imputation/final/DV_IMPUTED_R0.6_filtered.vcf.gz',
+        script = 'scripts/VEP_analysis.R',
+        vep_output = 'software/enembl-vep/VEP_human_analysis.txt'
+    output:
+        plot = "results/eQTL/results/Variant_location_called_V_Imputed.pdf"

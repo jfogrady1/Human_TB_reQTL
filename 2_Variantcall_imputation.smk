@@ -80,6 +80,7 @@ rule all:
         expand('work/DNA_seq/imputation/final/Overlap_Chr14_CDS_R0.{R}.txt', R = [6,3]),
         'work/DNA_seq/imputation/final/SNP_density_all_chr.pdf',
         'work/DNA_seq/imputation/final/chr14_karyogram_raw.pdf',
+        "results/eQTL/results/Variant_location_called_V_Imputed.pdf",
         # MBV
         expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_0"]),
         expand("results/eQTL/sample_check/{sample}.mbv_output.txt", sample = config2["IDS_1"]),
