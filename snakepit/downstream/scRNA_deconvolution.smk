@@ -4,20 +4,20 @@ import subprocess
 
 #rule all:
     #input:
-        #expand('/home/workspace/jogrady/heQTL/work/scRNA_seq/{singlecell_ids}', singlecell_ids=config["sc_ids"]),
-        #'/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.metadata.txt',
-        #'/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/ALL_benchmark_results.txt',
-        #"/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt",
-        #"/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation_res.txt"
+        #expand('work/scRNA_seq/{singlecell_ids}', singlecell_ids=config["sc_ids"]),
+        #'work/scRNA_seq/TB.combined.metadata.txt',
+        #'work/scRNA_seq/Benchmark/ALL_benchmark_results.txt',
+        #"work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt",
+        #"work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation_res.txt"
 
 rule cellranger_count:
     input:
-        reference = "/home/workspace/jogrady/heQTL/data/scRNA_reference/refdata-gex-GRCh38-2020-A",
-        fastq_directory = "/home/workspace/jogrady/heQTL/data/scRNA_reference/",
-        cell_ranger = "/home/workspace/jogrady/heQTL/software/cellranger-7.2.0/cellranger"
+        reference = "data/scRNA_reference/refdata-gex-GRCh38-2020-A",
+        fastq_directory = "data/scRNA_reference/",
+        cell_ranger = "software/cellranger-7.2.0/cellranger"
 
     output:
-        '/home/workspace/jogrady/heQTL/work/scRNA_seq/{singlecell_ids}'
+        'work/scRNA_seq/{singlecell_ids}'
     params:
         id_flag = "{singlecell_ids}"
 
@@ -28,10 +28,10 @@ rule cellranger_count:
 
 #rule move_cell_ranger:
  #   input:
-  #      counts = '/home/workspace/jogrady/heQTL/{singlecell_ids}'
+  #      counts = '{singlecell_ids}'
 #
  #   output:
-  #      new_counts = directory('/home/workspace/jogrady/heQTL/work/scRNA_seq/{singlecell_ids}')
+  #      new_counts = directory('work/scRNA_seq/{singlecell_ids}')
 #
  #   shell:
   #      '''
@@ -41,20 +41,20 @@ rule cellranger_count:
 
 rule scRNA_seq_preprocessing:
     input:
-        sc_ids = expand('/home/workspace/jogrady/heQTL/work/scRNA_seq/{singlecell_ids}', singlecell_ids=config["sc_ids"]),
-        SCINA_reference = '/home/workspace/jogrady/heQTL/data/scRNA_reference/pbmc_22_10x_cell_type_signature_gene_sets.gmt',
-        script = "/home/workspace/jogrady/heQTL/scripts/scRNA_preprocessing.R"
+        sc_ids = expand('work/scRNA_seq/{singlecell_ids}', singlecell_ids=config["sc_ids"]),
+        SCINA_reference = 'data/scRNA_reference/pbmc_22_10x_cell_type_signature_gene_sets.gmt',
+        script = "scripts/scRNA_preprocessing.R"
 
     output:
-        UMAP_no_annotation = "/home/workspace/jogrady/heQTL/work/scRNA_seq/UMAP_no_annotation_merged.pdf",
-        TB_combined_seed = "/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.seed.set.RData",
-        UMAP_annotated ="/home/workspace/jogrady/heQTL/work/scRNA_seq/UMAP_TB.integrated.annotated.pdf",
-        TB_combined = "/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.final.rds",
-        all_conserved_unique = '/home/workspace/jogrady/heQTL/work/scRNA_seq/Conserved_Marker_genes.txt',
-        Active_id ='/home/workspace/jogrady/heQTL/work/scRNA_seq/Convert_UMI_Label.tsv',
-        gene_counts_cell = '/home/workspace/jogrady/heQTL/work/scRNA_seq/Gene_Count_per_Cell.tsv',
-        pseudobulk = '/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.pseudobulk.txt',
-        metadata = '/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.metadata.txt'
+        UMAP_no_annotation = "work/scRNA_seq/UMAP_no_annotation_merged.pdf",
+        TB_combined_seed = "work/scRNA_seq/TB.combined.seed.set.RData",
+        UMAP_annotated ="work/scRNA_seq/UMAP_TB.integrated.annotated.pdf",
+        TB_combined = "work/scRNA_seq/TB.combined.final.rds",
+        all_conserved_unique = 'work/scRNA_seq/Conserved_Marker_genes.txt',
+        Active_id ='work/scRNA_seq/Convert_UMI_Label.tsv',
+        gene_counts_cell = 'work/scRNA_seq/Gene_Count_per_Cell.tsv',
+        pseudobulk = 'work/scRNA_seq/TB.combined.pseudobulk.txt',
+        metadata = 'work/scRNA_seq/TB.combined.metadata.txt'
 
     shell:
         """
@@ -66,31 +66,31 @@ rule scRNA_seq_preprocessing:
 
 rule scRNA_seq_deconvolution:
     input:
-        annotation = "/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf",
-        markers = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Conserved_Marker_genes.txt",
-        sc_data = "/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.final.rds",
-        Ciber_RAW_RAW = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_RAW_RAW.txt",
-        Ciber_RAW_TPM = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_RAW_TPM.txt",
-        Ciber_RAW_CPM = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_RAW_CPM.txt",
-        Ciber_TPM_RAW = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_TPM_RAW.txt",
-        Ciber_TPM_CPM = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_TPM_CPM.txt",
-        Ciber_TPM_TPM = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_TPM_TPM.txt",
-        script = "/home/workspace/jogrady/heQTL/scripts/scRNA_deconvolution_MuSiC.R",
+        annotation = "data/ref_genome/gencode.v43.annotation.gtf",
+        markers = "work/scRNA_seq/Conserved_Marker_genes.txt",
+        sc_data = "work/scRNA_seq/TB.combined.final.rds",
+        Ciber_RAW_RAW = "work/scRNA_seq/Benchmark/CIBERSORTx_RAW_RAW.txt",
+        Ciber_RAW_TPM = "work/scRNA_seq/Benchmark/CIBERSORTx_RAW_TPM.txt",
+        Ciber_RAW_CPM = "work/scRNA_seq/Benchmark/CIBERSORTx_RAW_CPM.txt",
+        Ciber_TPM_RAW = "work/scRNA_seq/Benchmark/CIBERSORTx_TPM_RAW.txt",
+        Ciber_TPM_CPM = "work/scRNA_seq/Benchmark/CIBERSORTx_TPM_CPM.txt",
+        Ciber_TPM_TPM = "work/scRNA_seq/Benchmark/CIBERSORTx_TPM_TPM.txt",
+        script = "scripts/scRNA_deconvolution_MuSiC.R",
 
 
     output:
-        TPM_matrix = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/TPM_signature_matrix_Cibersort.txt", 
-        RAW_matrix = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/RAW_signature_matrix_Cibersort.txt", 
-        simbu_generation = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Simbu_Simulation_Cell_Components.pdf",
-        bulk_CPM = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Pseudobulk_CPM.txt",
-        bulk_TPM = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Pseudobulk_TPM.txt",
-        bulk_RAW = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Pseudobulk_RAW.txt",
-        RMSE_heatmap = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Benchmark_heatmap.pdf",
-        Pearson_heatmap = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Benchmark_heatmap_pearson.pdf",
-        Benchmark_no_ciber = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Pseudo_Benchmark_raw.pdf",
-        Benchmark_ciber = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Deconvolution_Pseudo_Benchmark_Cibersort_raw.pdf",
-        Cibersort_CPM_individual = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Benchmark_Cibersort_all_celltypes_RAW_CPM.pdf",
-        All_benchmark_results = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/ALL_benchmark_results.txt"
+        TPM_matrix = "work/scRNA_seq/Benchmark/TPM_signature_matrix_Cibersort.txt", 
+        RAW_matrix = "work/scRNA_seq/Benchmark/RAW_signature_matrix_Cibersort.txt", 
+        simbu_generation = "work/scRNA_seq/Benchmark/Simbu_Simulation_Cell_Components.pdf",
+        bulk_CPM = "work/scRNA_seq/Benchmark/Pseudobulk_CPM.txt",
+        bulk_TPM = "work/scRNA_seq/Benchmark/Pseudobulk_TPM.txt",
+        bulk_RAW = "work/scRNA_seq/Benchmark/Pseudobulk_RAW.txt",
+        RMSE_heatmap = "work/scRNA_seq/Benchmark/Deconvolution_Benchmark_heatmap.pdf",
+        Pearson_heatmap = "work/scRNA_seq/Benchmark/Deconvolution_Benchmark_heatmap_pearson.pdf",
+        Benchmark_no_ciber = "work/scRNA_seq/Benchmark/Deconvolution_Pseudo_Benchmark_raw.pdf",
+        Benchmark_ciber = "work/scRNA_seq/Benchmark/Deconvolution_Pseudo_Benchmark_Cibersort_raw.pdf",
+        Cibersort_CPM_individual = "work/scRNA_seq/Benchmark/Benchmark_Cibersort_all_celltypes_RAW_CPM.pdf",
+        All_benchmark_results = "work/scRNA_seq/Benchmark/ALL_benchmark_results.txt"
 
     shell:
         """
@@ -103,11 +103,11 @@ rule scRNA_seq_deconvolution:
 
 rule get_count_matrix_4_real_decon:
     input:
-        counts = expand("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/count_matrix_ordered_{timepoint}.txt", timepoint = config["TIME"]),
-        symbols ="/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf",
-        script = "/home/workspace/jogrady/heQTL/scripts/Aggregate_counts_for_cibersort.R"
+        counts = expand("work/RNA_seq/quantification/count_matrix_ordered_{timepoint}.txt", timepoint = config["TIME"]),
+        symbols ="data/ref_genome/gencode.v43.annotation.gtf",
+        script = "scripts/Aggregate_counts_for_cibersort.R"
     output:
-        merged = "/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt"
+        merged = "work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt"
     shell:
         """
         Rscript {input.script} {input.counts} {input.symbols} {output.merged}
@@ -116,18 +116,18 @@ rule get_count_matrix_4_real_decon:
 
 rule Cibersort_plotting:
     input:
-        script = "/home/workspace/jogrady/heQTL/scripts/Cibersort_plotting.R",
-        Ciber_decon_res = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_Results_Real_deconvolution.txt",
-        Raw_RNA_seq_counts = "/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt",
-        markers = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Conserved_Marker_genes.txt",
-        tb_combined_file = "/home/workspace/jogrady/heQTL/work/scRNA_seq/TB.combined.final.rds"
+        script = "scripts/Cibersort_plotting.R",
+        Ciber_decon_res = "work/scRNA_seq/Benchmark/CIBERSORTx_Results_Real_deconvolution.txt",
+        Raw_RNA_seq_counts = "work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt",
+        markers = "work/scRNA_seq/Conserved_Marker_genes.txt",
+        tb_combined_file = "work/scRNA_seq/TB.combined.final.rds"
 
     output:
-        limma_results = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Limma_results_real_deconvolution.txt",
-        ciber_real_deconvolution = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Cibersort_Deconvolved_real_data.pdf",
-        music_ciber_compar = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_Music_raw_comparison.pdf",
-        correlation = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation.pdf",
-        correlation_table = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation_res.txt"
+        limma_results = "work/scRNA_seq/Benchmark/Limma_results_real_deconvolution.txt",
+        ciber_real_deconvolution = "work/scRNA_seq/Benchmark/Cibersort_Deconvolved_real_data.pdf",
+        music_ciber_compar = "work/scRNA_seq/Benchmark/CIBERSORTx_Music_raw_comparison.pdf",
+        correlation = "work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation.pdf",
+        correlation_table = "work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation_res.txt"
 
     shell:
         """
@@ -142,9 +142,9 @@ rule Cibersort_plotting:
     # Also tests for significant differences in the abundance of particular cell types
 #
  #   input:
-  #      Cibersort_output = "/home/workspace/jogrady/heQTL/work/scRNA_seq/CIBERSORTx_Results_Real_deconvolution.txt""
+  #      Cibersort_output = "work/scRNA_seq/CIBERSORTx_Results_Real_deconvolution.txt""
    # output:
-    #    Cibersort_graph = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/Cibersort_Deconvolved_real_data.pdf"
+    #    Cibersort_graph = "work/scRNA_seq/Benchmark/Cibersort_Deconvolved_real_data.pdf"
 #
 #
  #   shell:

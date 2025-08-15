@@ -1,28 +1,28 @@
 #rule all:
   #   input:
-        #expand('/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', timepoint = config["TIME"]),
-        #expand('/home/workspace/jogrady/heQTL/work/ieQTL/{t}_NK_cell_interaction_input_from_cibersort.txt', t = config["TIME"], celltype = config["cell"]),
-        #expand('/home/workspace/jogrady/heQTL/work/ieQTL/{t}_NK_cell.cis_qtl_top_assoc.txt.gz', t = config["TIME"], celltype = config["cell"]),
-        #expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_Memory_CD8+_T_cell.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
-        #expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_Naïve_B_cell.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
-        #expand('/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_{celltype}.txt', timepoint = config["TIME"], celltype = config["cell"]),
-        #expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_Classical_Monocyte.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
-        #expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_Non-classical_Monocyte.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
-        #expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_{celltype}_interaction_input_from_cibersort.txt", t = config["TIME"], celltype = config["cell"]),
-        #expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_cell_interaction_input_from_cibersort.txt", t = config["TIME"]),
-        #expand("/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/{timepoint}_{celltype}_residualised_expression.txt", timepoint = config["TIME"], celltype = config["cell"]),
-        #'/home/workspace/jogrady/heQTL/results/ieQTLs/ieQTL_MASHR.RData'
+        #expand('work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', timepoint = config["TIME"]),
+        #expand('work/ieQTL/{t}_NK_cell_interaction_input_from_cibersort.txt', t = config["TIME"], celltype = config["cell"]),
+        #expand('work/ieQTL/{t}_NK_cell.cis_qtl_top_assoc.txt.gz', t = config["TIME"], celltype = config["cell"]),
+        #expand("work/ieQTL/{t}_Memory_CD8+_T_cell.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
+        #expand("work/ieQTL/{t}_Naïve_B_cell.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
+        #expand('data/covariate/{timepoint}_ieqtlcovs_{celltype}.txt', timepoint = config["TIME"], celltype = config["cell"]),
+        #expand("work/ieQTL/{t}_Classical_Monocyte.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
+        #expand("work/ieQTL/{t}_Non-classical_Monocyte.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
+        #expand("work/ieQTL/{t}_{celltype}_interaction_input_from_cibersort.txt", t = config["TIME"], celltype = config["cell"]),
+        #expand("work/ieQTL/{t}_cell_interaction_input_from_cibersort.txt", t = config["TIME"]),
+        #expand("work/RNA_seq/quantification/{timepoint}_{celltype}_residualised_expression.txt", timepoint = config["TIME"], celltype = config["cell"]),
+        #'results/ieQTLs/ieQTL_MASHR.RData'
 
 
 
 
 rule preprocess_ieQTL:
     input:
-        ciber = "/home/workspace/jogrady/heQTL/work/scRNA_seq/Benchmark/CIBERSORTx_Results_Real_deconvolution.txt",
-        script = "/home/workspace/jogrady/heQTL/scripts/ieQTL_preprocessing_cibersort_files.R"
+        ciber = "work/scRNA_seq/Benchmark/CIBERSORTx_Results_Real_deconvolution.txt",
+        script = "scripts/ieQTL_preprocessing_cibersort_files.R"
     output:
-        cell_common = expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_{celltype}_interaction_input_from_cibersort.txt", t = config["TIME"], celltype = config["cell"]),
-        transformed = expand("/home/workspace/jogrady/heQTL/work/ieQTL/{t}_cell_interaction_input_from_cibersort.txt", t = config["TIME"])
+        cell_common = expand("work/ieQTL/{t}_{celltype}_interaction_input_from_cibersort.txt", t = config["TIME"], celltype = config["cell"]),
+        transformed = expand("work/ieQTL/{t}_cell_interaction_input_from_cibersort.txt", t = config["TIME"])
     
     params:
         cell = expand("{celltype}", celltype = config["cell"]),
@@ -36,9 +36,9 @@ rule preprocess_ieQTL:
 
 rule add_celltype_to_covariates:
     input:
-        script = "/home/workspace/jogrady/heQTL/scripts/ieQTL_covariates_preprocessing.R"
+        script = "scripts/ieQTL_covariates_preprocessing.R"
     output:
-        covariate_files = expand('/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_{celltype}.txt', timepoint = config["TIME"], celltype = config["cell"])
+        covariate_files = expand('data/covariate/{timepoint}_ieqtlcovs_{celltype}.txt', timepoint = config["TIME"], celltype = config["cell"])
     shell:
         """
         Rscript {input.script}
@@ -46,17 +46,17 @@ rule add_celltype_to_covariates:
 
 rule interaction_NK:
     input:
-        expression_bed='/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_NK_cell.txt', # Covariates,
-        interaction_file = '/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_NK_cell_interaction_input_from_cibersort.txt'
+        expression_bed='work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_NK_cell.txt', # Covariates,
+        interaction_file = 'work/ieQTL/{timepoint}_NK_cell_interaction_input_from_cibersort.txt'
     output:
-        parquet_files= "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_NK_cell.cis_qtl_top_assoc.txt.gz",
+        parquet_files= "work/ieQTL/{timepoint}_NK_cell.cis_qtl_top_assoc.txt.gz",
     resources:
         mem_mb = 6000,
         threads = 40
     params:
-       plink_prefix_path="/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
-       prefix = "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_NK_cell",
+       plink_prefix_path="work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
+       prefix = "work/ieQTL/{timepoint}_NK_cell",
        cis_window_size = "50000"
     shell:
         '''
@@ -71,17 +71,17 @@ rule interaction_NK:
 
 rule interaction_Naive_B:
     input:
-        expression_bed='/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_Naïve_B_cell.txt', # Covariates,
-        interaction_file = '/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Naïve_B_cell_interaction_input_from_cibersort.txt'
+        expression_bed='work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_Naïve_B_cell.txt', # Covariates,
+        interaction_file = 'work/ieQTL/{timepoint}_Naïve_B_cell_interaction_input_from_cibersort.txt'
     output:
-        parquet_files= "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Naïve_B_cell.cis_qtl_top_assoc.txt.gz",
+        parquet_files= "work/ieQTL/{timepoint}_Naïve_B_cell.cis_qtl_top_assoc.txt.gz",
     resources:
         mem_mb = 6000,
         threads = 40
     params:
-       plink_prefix_path="/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
-       prefix = "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Naïve_B_cell",
+       plink_prefix_path="work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
+       prefix = "work/ieQTL/{timepoint}_Naïve_B_cell",
        cis_window_size = "50000"
     shell:
         '''
@@ -94,17 +94,17 @@ rule interaction_Naive_B:
         '''
 rule interaction_Monocyte:
     input:
-        expression_bed='/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_Classical_Monocyte.txt', # Covariates,
-        interaction_file = '/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Classical_Monocyte_interaction_input_from_cibersort.txt'
+        expression_bed='work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_Classical_Monocyte.txt', # Covariates,
+        interaction_file = 'work/ieQTL/{timepoint}_Classical_Monocyte_interaction_input_from_cibersort.txt'
     output:
-        parquet_files= "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Classical_Monocyte.cis_qtl_top_assoc.txt.gz",
+        parquet_files= "work/ieQTL/{timepoint}_Classical_Monocyte.cis_qtl_top_assoc.txt.gz",
     resources:
         mem_mb = 6000,
         threads = 40
     params:
-       plink_prefix_path="/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
-       prefix = "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Classical_Monocyte",
+       plink_prefix_path="work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
+       prefix = "work/ieQTL/{timepoint}_Classical_Monocyte",
        cis_window_size = "50000"
     shell:
         '''
@@ -117,17 +117,17 @@ rule interaction_Monocyte:
         '''
 rule interaction_non_classical_monocyte:
     input:
-        expression_bed='/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_Non-classical_Monocyte.txt', # Covariates,
-        interaction_file = '/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Non-classical_Monocyte_interaction_input_from_cibersort.txt'
+        expression_bed='work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_Non-classical_Monocyte.txt', # Covariates,
+        interaction_file = 'work/ieQTL/{timepoint}_Non-classical_Monocyte_interaction_input_from_cibersort.txt'
     output:
-        parquet_files= "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Non-classical_Monocyte.cis_qtl_top_assoc.txt.gz",
+        parquet_files= "work/ieQTL/{timepoint}_Non-classical_Monocyte.cis_qtl_top_assoc.txt.gz",
     resources:
         mem_mb = 6000,
         threads = 40
     params:
-       plink_prefix_path="/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
-       prefix = "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Non-classical_Monocyte",
+       plink_prefix_path="work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
+       prefix = "work/ieQTL/{timepoint}_Non-classical_Monocyte",
        cis_window_size = "50000"
     shell:
         '''
@@ -141,17 +141,17 @@ rule interaction_non_classical_monocyte:
 
 rule interaction_CD8_Tcell:
     input:
-        expression_bed='/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_Memory_CD8+_T_cell.txt', # Covariates,
-        interaction_file = '/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Memory_CD8+_T_cell_interaction_input_from_cibersort.txt'
+        expression_bed='work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz', # Phenotypes
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_Memory_CD8+_T_cell.txt', # Covariates,
+        interaction_file = 'work/ieQTL/{timepoint}_Memory_CD8+_T_cell_interaction_input_from_cibersort.txt'
     output:
-        parquet_files= "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Memory_CD8+_T_cell.cis_qtl_top_assoc.txt.gz",
+        parquet_files= "work/ieQTL/{timepoint}_Memory_CD8+_T_cell.cis_qtl_top_assoc.txt.gz",
     resources:
         mem_mb = 6000,
         threads = 40
     params:
-       plink_prefix_path="/home/workspace/jogrady/heQTL/work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
-       prefix = "/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_Memory_CD8+_T_cell",
+       plink_prefix_path="work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", # Genotypes
+       prefix = "work/ieQTL/{timepoint}_Memory_CD8+_T_cell",
        cis_window_size = "50000"
     shell:
         '''
@@ -172,10 +172,10 @@ wildcard_constraints:
        
 rule edit_ieQTL_covariates:
     input:
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_{celltype}.txt',
-        script="/home/workspace/jogrady/heQTL/scripts/Covariate_edit_qtltools.R"
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_{celltype}.txt',
+        script="scripts/Covariate_edit_qtltools.R"
     output:
-        cov_edit='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_{celltype}_qtltools.txt'
+        cov_edit='data/covariate/{timepoint}_ieqtlcovs_{celltype}_qtltools.txt'
     shell:
         '''
         Rscript {input.script} {input.covariates_file} {output.cov_edit} 
@@ -183,10 +183,10 @@ rule edit_ieQTL_covariates:
         
 rule extract_residuals:
     input:
-        bed = multiext('/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/Normalised_counts_{timepoint}_qtltools.bed', ".gz", ".gz.tbi"), # Phenotypes
-        covariates_file='/home/workspace/jogrady/heQTL/data/covariate/{timepoint}_ieqtlcovs_{celltype}_qtltools.txt'
+        bed = multiext('work/RNA_seq/quantification/Normalised_counts_{timepoint}_qtltools.bed', ".gz", ".gz.tbi"), # Phenotypes
+        covariates_file='data/covariate/{timepoint}_ieqtlcovs_{celltype}_qtltools.txt'
     output:
-        corrected = "/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/{timepoint}_{celltype}_residualised_expression.txt"
+        corrected = "work/RNA_seq/quantification/{timepoint}_{celltype}_residualised_expression.txt"
     singularity: "docker://jogrady/qtltools:1.3.1"
     shell:
         '''
@@ -196,17 +196,17 @@ rule extract_residuals:
 
 rule ieQTL_mashr:
     input:
-        script = "/home/workspace/jogrady/heQTL/scripts/ieQTL_mashR.R",
-        annotation = "/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf",
-        ieQTL= expand("/home/workspace/jogrady/heQTL/work/ieQTL/{timepoint}_{celltype}.cis_qtl_top_assoc.txt.gz", timepoint = config["TIME"], celltype = config["cell"]), # note not used at all here
+        script = "scripts/ieQTL_mashR.R",
+        annotation = "data/ref_genome/gencode.v43.annotation.gtf",
+        ieQTL= expand("work/ieQTL/{timepoint}_{celltype}.cis_qtl_top_assoc.txt.gz", timepoint = config["TIME"], celltype = config["cell"]), # note not used at all here
 
     output: 
-        circ_plot = "/home/workspace/jogrady/heQTL/work/ieQTL/MASHR_LFSR_0.01_5_Cell_types.pdf",
-        all_signif_ieQTLs_long = "/home/workspace/jogrady/heQTL/results/ieQTLs/LFSR_0.01_ieQTLs.txt",
-        private_ieQTL = "/home/workspace/jogrady/heQTL/results/ieQTLs/mTB_private_ieQTLs.txt",
-        private_treat = "/home/workspace/jogrady/heQTL/results/ieQTLs/treat_private_ieQTLs.txt",
-        architecture = "/home/workspace/jogrady/heQTL/results/ieQTLs/Genomic_architecture_ieQTLs.pdf",
-        rds = '/home/workspace/jogrady/heQTL/results/ieQTLs/ieQTL_MASHR.RData'
+        circ_plot = "work/ieQTL/MASHR_LFSR_0.01_5_Cell_types.pdf",
+        all_signif_ieQTLs_long = "results/ieQTLs/LFSR_0.01_ieQTLs.txt",
+        private_ieQTL = "results/ieQTLs/mTB_private_ieQTLs.txt",
+        private_treat = "results/ieQTLs/treat_private_ieQTLs.txt",
+        architecture = "results/ieQTLs/Genomic_architecture_ieQTLs.pdf",
+        rds = 'results/ieQTLs/ieQTL_MASHR.RData'
 
     params:
         cell_type = expand("{celltype}", celltype = config["cell"])
