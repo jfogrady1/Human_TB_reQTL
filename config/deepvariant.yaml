@@ -1,16 +1,16 @@
 ## variant calling
 
 ## reference fasta
-reference: '/home/workspace/jogrady/heQTL/data/ref_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa'
+reference: 'data/ref_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa'
 
 
 ## path location for the bam files
-bam_path_0: '/home/workspace/jogrady/heQTL/work/RNA_seq/align/T0/'
-bam_path_1: '/home/workspace/jogrady/heQTL/work/RNA_seq/align/T1/'
-bam_path_2: '/home/workspace/jogrady/heQTL/work/RNA_seq/align/T2/'
-bam_path_3: '/home/workspace/jogrady/heQTL/work/RNA_seq/align/T3/'
-bam_path_4: '/home/workspace/jogrady/heQTL/work/RNA_seq/align/T4/'
-bam_path_merged: '/home/workspace/jogrady/heQTL/work/RNA_seq/align/mergedfinal/'
+bam_path_0: 'work/RNA_seq/align/T0/'
+bam_path_1: 'work/RNA_seq/align/T1/'
+bam_path_2: 'work/RNA_seq/align/T2/'
+bam_path_3: 'work/RNA_seq/align/T3/'
+bam_path_4: 'work/RNA_seq/align/T4/'
+bam_path_merged: 'work/RNA_seq/align/mergedfinal/'
 
 ## extra name scheme to get the actual bam file from the bam_path above.
 ## ideally this should just be '{sample}.bam' or something simple, but this allows complex handling
@@ -19,19 +19,19 @@ bam_name: '{sample}.bam'
 
 # need to bind these onto the path of singularity to tell it that it can access the model etc
 binding_paths:
-  - '/home/workspace/jogrady/heQTL/work/'
-  - '/home/workspace/jogrady/heQTL/data/'
-  - '/home/workspace/jogrady/heQTL/config/'
+  - 'work/'
+  - 'data/'
+  - 'config/'
   - '$TMPDIR'
 
 
 ## whatever you want the output folder to be named
-Run_name_0: '/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T0'
-Run_name_1: '/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T1'
-Run_name_2: '/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T2'
-Run_name_3: '/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T3'
-Run_name_4: '/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/T4'
-Run_merged: '/home/workspace/jogrady/heQTL/work/RNA_seq/variant_call/mergedcall'
+Run_name_0: 'work/RNA_seq/variant_call/T0'
+Run_name_1: 'work/RNA_seq/variant_call/T1'
+Run_name_2: 'work/RNA_seq/variant_call/T2'
+Run_name_3: 'work/RNA_seq/variant_call/T3'
+Run_name_4: 'work/RNA_seq/variant_call/T4'
+Run_merged: 'work/RNA_seq/variant_call/mergedcall'
 
 ## number of chunks to run make_examples on. More shards = more parallel.
 shards: 15
@@ -55,11 +55,11 @@ regions:
 
 ## DeepVariant model. Generally should use 'WGS' - here we are using RNA
 model: 'RNA'
-checkpoint: '/home/workspace/jogrady/heQTL/data/model/model.ckpt'
+checkpoint: 'data/model/model.ckpt'
 
 ## Different GLnexus config files for merging. Can use a default option or specify a path with a yml file. (MUST BE YML NOT YAML).
 GL_config:
-  Unrevised: '/home/workspace/jogrady/heQTL/config/GL_DV_raw.yml'
+  Unrevised: 'config/GL_DV_raw.yml'
 
 # DeepVariant and GLnexus containers.
 containers:
