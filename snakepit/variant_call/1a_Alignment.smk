@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import subprocess
 
-#configfile: '/cluster/work/pausch/jogrady/heQTL/config/config.yaml'
+#configfile: 'config/config.yaml'
 IDS_0 = [
     'SRR12609394', 'SRR12609405', 'SRR12609414', 'SRR12609425', 'SRR12609434',
     'SRR12609449', 'SRR12609475', 'SRR12609489', 'SRR12609495', 'SRR12609506',
@@ -61,141 +61,141 @@ IDS_4 = [
 
 rule all:
     input:
-        '/cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/multiqc/multiqc_report.html',
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T0/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_0"], N = (1,2)),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T1/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_1"], N = (1,2)),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T2/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_2"], N = (1,2)),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T3/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_3"], N = (1,2)),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T4/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_4"], N = (1,2)),
-        '/cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/multiqc/multiqc_report.html',
-        '/cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/multiqc/multiqc_report.html',
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T0/align/{individual}.bam.bai', individual=config["fastqfiles_0"]),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T1/align/{individual}.bam.bai', individual=config["fastqfiles_1"]),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T2/align/{individual}.bam.bai', individual=config["fastqfiles_2"]),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T3/align/{individual}.bam.bai', individual=config["fastqfiles_3"]),
-        expand('/cluster/work/pausch/jogrady/heQTL/work/T4/align/{individual}.bam.bai', individual=config["fastqfiles_4"])
+        'work/T0/fastqc/multiqc/multiqc_report.html',
+        'work/T1/fastqc/multiqc/multiqc_report.html',
+        'work/T2/fastqc/multiqc/multiqc_report.html',
+        'work/T3/fastqc/multiqc/multiqc_report.html',
+        'work/T4/fastqc/multiqc/multiqc_report.html',
+        expand('work/T0/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_0"], N = (1,2)),
+        expand('work/T1/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_1"], N = (1,2)),
+        expand('work/T2/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_2"], N = (1,2)),
+        expand('work/T3/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_3"], N = (1,2)),
+        expand('work/T4/trimmed/{individual}_{N}_trimmed.fastq.gz', individual=config["fastqfiles_4"], N = (1,2)),
+        'work/T0/fastqcTrim/multiqc/multiqc_report.html',
+        'work/T1/fastqcTrim/multiqc/multiqc_report.html',
+        'work/T2/fastqcTrim/multiqc/multiqc_report.html',
+        'work/T3/fastqcTrim/multiqc/multiqc_report.html',
+        'work/T4/fastqcTrim/multiqc/multiqc_report.html',
+        expand('work/T0/align/{individual}.bam.bai', individual=config["fastqfiles_0"]),
+        expand('work/T1/align/{individual}.bam.bai', individual=config["fastqfiles_1"]),
+        expand('work/T2/align/{individual}.bam.bai', individual=config["fastqfiles_2"]),
+        expand('work/T3/align/{individual}.bam.bai', individual=config["fastqfiles_3"]),
+        expand('work/T4/align/{individual}.bam.bai', individual=config["fastqfiles_4"])
 
 rule fastqc_0:
     input:
         reads = lambda wildcards: expand(f'{config["fastqfiles_0"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2))
     output:
-        reads = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
-        html = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
+        reads = expand('work/T0/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
+        html = expand('work/T0/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/'
+        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o work/T0/fastqc/'
 
 
 rule fastqc_1:
     input:
         reads = lambda wildcards: expand(f'{config["fastqfiles_1"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2))
     output:
-        reads = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
-        html = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
+        reads = expand('work/T1/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
+        html = expand('work/T1/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/'
+        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o work/T1/fastqc/'
 
 
 rule fastqc_2:
     input:
         reads = lambda wildcards: expand(f'{config["fastqfiles_2"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2))
     output:
-        reads = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
-        html = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
+        reads = expand('work/T2/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
+        html = expand('work/T2/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/'
+        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o work/T2/fastqc/'
 
 
 rule fastqc_3:
     input:
         reads = lambda wildcards: expand(f'{config["fastqfiles_3"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2))
     output:
-        reads = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
-        html = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
+        reads = expand('work/T3/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
+        html = expand('work/T3/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/'
+        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o work/T3/fastqc/'
 
 rule fastqc_4:
     input:
         reads = lambda wildcards: expand(f'{config["fastqfiles_4"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2))
     output:
-        reads = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
-        html = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
+        reads = expand('work/T4/fastqc/{{individual}}_{N}_fastqc.zip', N = (1,2)),
+        html = expand('work/T4/fastqc/{{individual}}_{N}_fastqc.html', N = (1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/'
+        'fastqc {input.reads[0]} {input.reads[1]} -t {threads} -o work/T4/fastqc/'
 
 
 rule multiqc_0:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/{srr}_1_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/{srr}_2_fastqc.zip'], srr = IDS_0)
+        expand(['work/T0/fastqc/{srr}_1_fastqc.zip', 'work/T0/fastqc/{srr}_2_fastqc.zip'], srr = IDS_0)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/multiqc/multiqc_report.html'
+        report='work/T0/fastqc/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T0/fastqc/multiqc/
+        multiqc {input} -f -o work/T0/fastqc/multiqc/
         """
 
 rule multiqc_1:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/{srr}_1_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/{srr}_2_fastqc.zip'], srr = IDS_1)
+        expand(['work/T1/fastqc/{srr}_1_fastqc.zip', 'work/T1/fastqc/{srr}_2_fastqc.zip'], srr = IDS_1)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/multiqc/multiqc_report.html'
+        report='work/T1/fastqc/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T1/fastqc/multiqc/
+        multiqc {input} -f -o work/T1/fastqc/multiqc/
         """
 rule multiqc_2:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/{srr}_1_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/{srr}_2_fastqc.zip'], srr = IDS_2)
+        expand(['work/T2/fastqc/{srr}_1_fastqc.zip', 'work/T2/fastqc/{srr}_2_fastqc.zip'], srr = IDS_2)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/multiqc/multiqc_report.html'
+        report='work/T2/fastqc/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T2/fastqc/multiqc/
+        multiqc {input} -f -o work/T2/fastqc/multiqc/
         """
 rule multiqc_3:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/{srr}_1_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/{srr}_2_fastqc.zip'], srr = IDS_3)
+        expand(['work/T3/fastqc/{srr}_1_fastqc.zip', 'work/T3/fastqc/{srr}_2_fastqc.zip'], srr = IDS_3)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/multiqc/multiqc_report.html'
+        report='work/T3/fastqc/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T3/fastqc/multiqc/
+        multiqc {input} -f -o work/T3/fastqc/multiqc/
         """
 rule multiqc_4:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/{srr}_1_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/{srr}_2_fastqc.zip'], srr = IDS_4)
+        expand(['work/T4/fastqc/{srr}_1_fastqc.zip', 'work/T4/fastqc/{srr}_2_fastqc.zip'], srr = IDS_4)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/multiqc/multiqc_report.html'
+        report='work/T4/fastqc/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T4/fastqc/multiqc/
+        multiqc {input} -f -o work/T4/fastqc/multiqc/
         """
 
 
@@ -205,8 +205,8 @@ rule trimming_0:
         untrimmed_reads = lambda wildcards: expand(f'{config["fastqfiles_0"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2)),
         adapters = config["adapter"]["illumina"]
     output:
-        trimmed_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T0/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
-        unpaired_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T0/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
+        trimmed_reads=expand('work/T0/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
+        unpaired_reads=expand('work/T0/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
     threads:
         12
     resources:
@@ -220,8 +220,8 @@ rule trimming_1:
         untrimmed_reads = lambda wildcards: expand(f'{config["fastqfiles_1"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2)),
         adapters = config["adapter"]["illumina"]
     output:
-        trimmed_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T1/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
-        unpaired_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T1/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
+        trimmed_reads=expand('work/T1/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
+        unpaired_reads=expand('work/T1/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
     threads:
         12
     resources:
@@ -234,8 +234,8 @@ rule trimming_2:
         untrimmed_reads = lambda wildcards: expand(f'{config["fastqfiles_2"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2)),
         adapters = config["adapter"]["illumina"]
     output:
-        trimmed_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T2/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
-        unpaired_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T2/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
+        trimmed_reads=expand('work/T2/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
+        unpaired_reads=expand('work/T2/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
     threads:
         12
     resources:
@@ -249,8 +249,8 @@ rule trimming_3:
         untrimmed_reads = lambda wildcards: expand(f'{config["fastqfiles_3"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2)),
         adapters = config["adapter"]["illumina"]
     output:
-        trimmed_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T3/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
-        unpaired_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T3/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
+        trimmed_reads=expand('work/T3/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
+        unpaired_reads=expand('work/T3/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
     threads:
         12
     resources:
@@ -263,8 +263,8 @@ rule trimming_4:
         untrimmed_reads = lambda wildcards: expand(f'{config["fastqfiles_4"][wildcards.individual]}_{{N}}.fastq.gz', N = (1,2)),
         adapters = config["adapter"]["illumina"]
     output:
-        trimmed_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T4/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
-        unpaired_reads=expand('/cluster/work/pausch/jogrady/heQTL/work/T4/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
+        trimmed_reads=expand('work/T4/trimmed/{{individual}}_{N}_trimmed.fastq.gz', N = (1,2)),
+        unpaired_reads=expand('work/T4/trimmed/{{individual}}_{N}_unpaired.fastq.gz', N = (1,2))
     threads:
         12
     resources:
@@ -276,118 +276,118 @@ rule trimming_4:
 
 rule fastqcTrimmed_0:
     input:
-        Tread = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T0/trimmed/{config["IDS_0"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
+        Tread = lambda wildcards: expand(f'work/T0/trimmed/{config["IDS_0"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
     output:
-        reads_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
-        html_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
+        reads_trimmed = expand('work/T0/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
+        html_trimmed = expand('work/T0/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/'
+        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o work/T0/fastqcTrim/'
         
 rule fastqcTrimmed_1:
     input:
-        Tread = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T1/trimmed/{config["IDS_1"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
+        Tread = lambda wildcards: expand(f'work/T1/trimmed/{config["IDS_1"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
     output:
-        reads_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
-        html_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
+        reads_trimmed = expand('work/T1/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
+        html_trimmed = expand('work/T1/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/'
+        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o work/T1/fastqcTrim/'
 
 rule fastqcTrimmed_2:
     input:
-        Tread = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T2/trimmed/{config["IDS_2"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
+        Tread = lambda wildcards: expand(f'work/T2/trimmed/{config["IDS_2"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
     output:
-        reads_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
-        html_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
+        reads_trimmed = expand('work/T2/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
+        html_trimmed = expand('work/T2/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/'
+        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o work/T2/fastqcTrim/'
         
 
 
 rule fastqcTrimmed_3:
     input:
-        Tread = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T3/trimmed/{config["IDS_3"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
+        Tread = lambda wildcards: expand(f'work/T3/trimmed/{config["IDS_3"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
     output:
-        reads_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
-        html_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
+        reads_trimmed = expand('work/T3/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
+        html_trimmed = expand('work/T3/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/'
+        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o work/T3/fastqcTrim/'
         
         
         
 rule fastqcTrimmed_4:
     input:
-        Tread = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T4/trimmed/{config["IDS_4"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
+        Tread = lambda wildcards: expand(f'work/T4/trimmed/{config["IDS_4"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2))
     output:
-        reads_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
-        html_trimmed = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
+        reads_trimmed = expand('work/T4/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.zip', N=(1,2)),
+        html_trimmed = expand('work/T4/fastqcTrim/{{srr}}_{N}_trimmed_fastqc.html', N=(1,2))
     threads:
         12
     resources:
         mem_mb = 4000
     shell:
-        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o /cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/'
+        'fastqc {input.Tread[0]} {input.Tread[1]} -t {threads} -o work/T4/fastqcTrim/'
 
 rule multiqcTrimmed_0:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/{srr}_1_trimmed_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_0)
+        expand(['work/T0/fastqcTrim/{srr}_1_trimmed_fastqc.zip', 'work/T0/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_0)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/multiqc/multiqc_report.html'
+        report='work/T0/fastqcTrim/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T0/fastqcTrim/multiqc/
+        multiqc {input} -f -o work/T0/fastqcTrim/multiqc/
         """
 
 rule multiqcTrimmed_1:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/{srr}_1_trimmed_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_1)
+        expand(['work/T1/fastqcTrim/{srr}_1_trimmed_fastqc.zip', 'work/T1/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_1)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/multiqc/multiqc_report.html'
+        report='work/T1/fastqcTrim/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T1/fastqcTrim/multiqc/
+        multiqc {input} -f -o work/T1/fastqcTrim/multiqc/
         """
 rule multiqcTrimmed_2:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/{srr}_1_trimmed_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_2)
+        expand(['work/T2/fastqcTrim/{srr}_1_trimmed_fastqc.zip', 'work/T2/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_2)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/multiqc/multiqc_report.html'
+        report='work/T2/fastqcTrim/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T2/fastqcTrim/multiqc/
+        multiqc {input} -f -o work/T2/fastqcTrim/multiqc/
         """
 rule multiqcTrimmed_3:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/{srr}_1_trimmed_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_3)
+        expand(['work/T3/fastqcTrim/{srr}_1_trimmed_fastqc.zip', 'work/T3/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_3)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/multiqc/multiqc_report.html'
+        report='work/T3/fastqcTrim/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T3/fastqcTrim/multiqc/
+        multiqc {input} -f -o work/T3/fastqcTrim/multiqc/
         """
 rule multiqcTrimmed_4:
     input:
-        expand(['/cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/{srr}_1_trimmed_fastqc.zip', '/cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_4)
+        expand(['work/T4/fastqcTrim/{srr}_1_trimmed_fastqc.zip', 'work/T4/fastqcTrim/{srr}_2_trimmed_fastqc.zip'], srr = IDS_4)
     output:
-        report='/cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/multiqc/multiqc_report.html'
+        report='work/T4/fastqcTrim/multiqc/multiqc_report.html'
     shell:
         """
-        multiqc {input} -f -o /cluster/work/pausch/jogrady/heQTL/work/T4/fastqcTrim/multiqc/
+        multiqc {input} -f -o work/T4/fastqcTrim/multiqc/
         """
 
 
@@ -396,10 +396,10 @@ rule GenomeBuild:
         fasta = config["starinputs"]["reference"],
         annotation = config["starinputs"]["annot"]
     output:
-        directory('/cluster/work/pausch/jogrady/heQTL/work/STAR_DIR')
+        directory('work/STAR_DIR')
 
     conda:
-        '/cluster/work/pausch/jogrady/heQTL/envs/environment.yaml'
+        'envs/environment.yaml'
     threads: 20
     shell:
         'mkdir {output} && '
@@ -413,18 +413,18 @@ rule GenomeBuild:
 
 rule Alignment_0:
     input:
-        genome = '/cluster/work/pausch/jogrady/heQTL/work/STAR_DIR',
-        reads = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T0/trimmed/{config["IDS_0"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
+        genome = 'work/STAR_DIR',
+        reads = lambda wildcards: expand(f'work/T0/trimmed/{config["IDS_0"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
 
     params:
         prefix = lambda wildcards: f'{config["IDS_0"][wildcards.srr]}'
     output:
-        aligned = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}_Aligned.sortedByCoord.out.bam',
-        finallog = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}_Log.final.out',
-        interlog = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}_Log.progress.out',
-        initiallog = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}_Log.out'
+        aligned = 'work/T0/align/{srr}_Aligned.sortedByCoord.out.bam',
+        finallog = 'work/T0/align/{srr}_Log.final.out',
+        interlog = 'work/T0/align/{srr}_Log.progress.out',
+        initiallog = 'work/T0/align/{srr}_Log.out'
     conda:
-        '/cluster/work/pausch/jogrady/heQTL/envs/environment.yaml'
+        'envs/environment.yaml'
 
     threads: 20
 
@@ -433,25 +433,25 @@ rule Alignment_0:
         '--genomeDir {input.genome} --runThreadN {threads} '
         '--readFilesIn {input.reads[0]} {input.reads[1]} '
         '--readFilesCommand gunzip -c '
-        '--outFileNamePrefix /cluster/work/pausch/jogrady/heQTL/work/T0/align/{params.prefix}_ '
+        '--outFileNamePrefix work/T0/align/{params.prefix}_ '
         '--outSAMtype BAM SortedByCoordinate '
         '--limitBAMsortRAM 10000000000'
 
 
 rule Alignment_1:
     input:
-        genome = '/cluster/work/pausch/jogrady/heQTL/work/STAR_DIR',
-        reads = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T1/trimmed/{config["IDS_1"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
+        genome = 'work/STAR_DIR',
+        reads = lambda wildcards: expand(f'work/T1/trimmed/{config["IDS_1"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
 
     params:
         prefix = lambda wildcards: f'{config["IDS_1"][wildcards.srr]}'
     output:
-        aligned = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}_Aligned.sortedByCoord.out.bam',
-        finallog = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}_Log.final.out',
-        interlog = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}_Log.progress.out',
-        initiallog = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}_Log.out'
+        aligned = 'work/T1/align/{srr}_Aligned.sortedByCoord.out.bam',
+        finallog = 'work/T1/align/{srr}_Log.final.out',
+        interlog = 'work/T1/align/{srr}_Log.progress.out',
+        initiallog = 'work/T1/align/{srr}_Log.out'
     conda:
-        '/cluster/work/pausch/jogrady/heQTL/envs/environment.yaml'
+        'envs/environment.yaml'
 
     threads: 20
 
@@ -461,26 +461,26 @@ rule Alignment_1:
         '--genomeDir {input.genome} --runThreadN {threads} '
         '--readFilesIn {input.reads[0]} {input.reads[1]} '
         '--readFilesCommand gunzip -c '
-        '--outFileNamePrefix /cluster/work/pausch/jogrady/heQTL/work/T1/align/{params.prefix}_ '
+        '--outFileNamePrefix work/T1/align/{params.prefix}_ '
         '--outSAMtype BAM SortedByCoordinate '
         '--limitBAMsortRAM 50000000000'
         
         
 rule Alignment_2:
     input:
-        genome = '/cluster/work/pausch/jogrady/heQTL/work/STAR_DIR',
-        reads = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T2/trimmed/{config["IDS_2"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
+        genome = 'work/STAR_DIR',
+        reads = lambda wildcards: expand(f'work/T2/trimmed/{config["IDS_2"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
 
     params:
         prefix = lambda wildcards: f'{config["IDS_2"][wildcards.srr]}'
     output:
-        aligned = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}_Aligned.sortedByCoord.out.bam',
-        finallog = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}_Log.final.out',
-        interlog = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}_Log.progress.out',
-        initiallog = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}_Log.out'
+        aligned = 'work/T2/align/{srr}_Aligned.sortedByCoord.out.bam',
+        finallog = 'work/T2/align/{srr}_Log.final.out',
+        interlog = 'work/T2/align/{srr}_Log.progress.out',
+        initiallog = 'work/T2/align/{srr}_Log.out'
 
     conda:
-        '/cluster/work/pausch/jogrady/heQTL/envs/environment.yaml'
+        'envs/environment.yaml'
 
     threads: 20
 
@@ -490,7 +490,7 @@ rule Alignment_2:
         '--genomeDir {input.genome} --runThreadN {threads} '
         '--readFilesIn {input.reads[0]} {input.reads[1]} '
         '--readFilesCommand gunzip -c '
-        '--outFileNamePrefix /cluster/work/pausch/jogrady/heQTL/work/T2/align/{params.prefix}_ '
+        '--outFileNamePrefix work/T2/align/{params.prefix}_ '
         '--outSAMtype BAM SortedByCoordinate '
         '--limitBAMsortRAM 50000000000'
   
@@ -498,18 +498,18 @@ rule Alignment_2:
   
 rule Alignment_3:
     input:
-        genome = '/cluster/work/pausch/jogrady/heQTL/work/STAR_DIR',
-        reads = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T3/trimmed/{config["IDS_3"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
+        genome = 'work/STAR_DIR',
+        reads = lambda wildcards: expand(f'work/T3/trimmed/{config["IDS_3"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
 
     params:
         prefix = lambda wildcards: f'{config["IDS_3"][wildcards.srr]}'
     output:
-        aligned = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}_Aligned.sortedByCoord.out.bam',
-        finallog = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}_Log.final.out',
-        interlog = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}_Log.progress.out',
-        initiallog = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}_Log.out'
+        aligned = 'work/T3/align/{srr}_Aligned.sortedByCoord.out.bam',
+        finallog = 'work/T3/align/{srr}_Log.final.out',
+        interlog = 'work/T3/align/{srr}_Log.progress.out',
+        initiallog = 'work/T3/align/{srr}_Log.out'
     conda:
-        '/cluster/work/pausch/jogrady/heQTL/envs/environment.yaml'
+        'envs/environment.yaml'
 
     threads: 20
 
@@ -519,25 +519,25 @@ rule Alignment_3:
         '--genomeDir {input.genome} --runThreadN {threads} '
         '--readFilesIn {input.reads[0]} {input.reads[1]} '
         '--readFilesCommand gunzip -c '
-        '--outFileNamePrefix /cluster/work/pausch/jogrady/heQTL/work/T3/align/{params.prefix}_ '
+        '--outFileNamePrefix work/T3/align/{params.prefix}_ '
         '--outSAMtype BAM SortedByCoordinate '
         '--limitBAMsortRAM 50000000000'
         
 
 rule Alignment_4:
     input:
-        genome = '/cluster/work/pausch/jogrady/heQTL/work/STAR_DIR',
-        reads = lambda wildcards: expand(f'/cluster/work/pausch/jogrady/heQTL/work/T4/trimmed/{config["IDS_4"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
+        genome = 'work/STAR_DIR',
+        reads = lambda wildcards: expand(f'work/T4/trimmed/{config["IDS_4"][wildcards.srr]}_{{N}}_trimmed.fastq.gz', N=(1,2)),
 
     params:
         prefix = lambda wildcards: f'{config["IDS_4"][wildcards.srr]}'
     output:
-        aligned = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}_Aligned.sortedByCoord.out.bam',
-        finallog = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}_Log.final.out',
-        interlog = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}_Log.progress.out',
-        initiallog = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}_Log.out'
+        aligned = 'work/T4/align/{srr}_Aligned.sortedByCoord.out.bam',
+        finallog = 'work/T4/align/{srr}_Log.final.out',
+        interlog = 'work/T4/align/{srr}_Log.progress.out',
+        initiallog = 'work/T4/align/{srr}_Log.out'
     conda:
-        '/cluster/work/pausch/jogrady/heQTL/envs/environment.yaml'
+        'envs/environment.yaml'
 
     threads: 20
 
@@ -547,16 +547,16 @@ rule Alignment_4:
         '--genomeDir {input.genome} --runThreadN {threads} '
         '--readFilesIn {input.reads[0]} {input.reads[1]} '
         '--readFilesCommand gunzip -c '
-        '--outFileNamePrefix /cluster/work/pausch/jogrady/heQTL/work/T4/align/{params.prefix}_ '
+        '--outFileNamePrefix work/T4/align/{params.prefix}_ '
         '--outSAMtype BAM SortedByCoordinate '
         '--limitBAMsortRAM 50000000000'
 
 
 rule renamebam_0:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_0)
+        bam = expand('work/T0/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_0)
     output:
-        simple_index = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
+        simple_index = 'work/T0/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
     threads: 4
 
     shell:
@@ -564,36 +564,36 @@ rule renamebam_0:
 
 rule renamebam_1:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_1)
+        bam = expand('work/T1/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_1)
     output:
-        simple_index = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
+        simple_index = 'work/T1/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
     threads: 4
 
     shell:
         'samtools index {input.bam}'
 rule renamebam_2:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_2)
+        bam = expand('work/T2/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_2)
     output:
-        simple_index = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
+        simple_index = 'work/T2/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
     threads: 4
 
     shell:
          'samtools index {input.bam}'
 rule renamebam_3:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_3)
+        bam = expand('work/T3/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_3)
     output:
-        simple_index = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
+        simple_index = 'work/T3/align/{srr}_Aligned.sortedByCoord.out.bam.bai'
     threads: 4
 
     shell:
          'samtools index {input.bam}'
 rule renamebam_4:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_4)
+        bam = expand('work/T4/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_4)
     output:
-        simple_index = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}_Aligned.sortedByCoord.out.bam.bai',
+        simple_index = 'work/T4/align/{srr}_Aligned.sortedByCoord.out.bam.bai',
     threads: 4
 
     shell:
@@ -602,55 +602,55 @@ rule renamebam_4:
 
 rule clean_0:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_0),
-        bai = expand('/cluster/work/pausch/jogrady/heQTL/work/T0/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_0)
+        bam = expand('work/T0/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_0),
+        bai = expand('work/T0/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_0)
     output:
-        simple_bam = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}.bam',
-        simple_bai = '/cluster/work/pausch/jogrady/heQTL/work/T0/align/{srr}.bam.bai'
+        simple_bam = 'work/T0/align/{srr}.bam',
+        simple_bai = 'work/T0/align/{srr}.bam.bai'
     shell:
          'rename "_Aligned.sortedByCoord.out" "" {input.bam} && '
          'rename "_Aligned.sortedByCoord.out" "" {input.bai}'
 
 rule clean_1:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_1),
-        bai = expand('/cluster/work/pausch/jogrady/heQTL/work/T1/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_1)
+        bam = expand('work/T1/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_1),
+        bai = expand('work/T1/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_1)
     output:
-        simple_bam = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}.bam',
-        simple_bai = '/cluster/work/pausch/jogrady/heQTL/work/T1/align/{srr}.bam.bai'
+        simple_bam = 'work/T1/align/{srr}.bam',
+        simple_bai = 'work/T1/align/{srr}.bam.bai'
     shell:
          'rename "_Aligned.sortedByCoord.out" "" {input.bam} && '
          'rename "_Aligned.sortedByCoord.out" "" {input.bai}'
 
 rule clean_2:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_2),
-        bai = expand('/cluster/work/pausch/jogrady/heQTL/work/T2/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_2)
+        bam = expand('work/T2/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_2),
+        bai = expand('work/T2/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_2)
     output:
-        simple_bam = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}.bam',
-        simple_bai = '/cluster/work/pausch/jogrady/heQTL/work/T2/align/{srr}.bam.bai'
+        simple_bam = 'work/T2/align/{srr}.bam',
+        simple_bai = 'work/T2/align/{srr}.bam.bai'
     shell:
          'rename "_Aligned.sortedByCoord.out" "" {input.bam} && '
          'rename "_Aligned.sortedByCoord.out" "" {input.bai}'
 
 rule clean_3:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_3),
-        bai = expand('/cluster/work/pausch/jogrady/heQTL/work/T3/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_3)
+        bam = expand('work/T3/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_3),
+        bai = expand('work/T3/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_3)
     output:
-        simple_bam = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}.bam',
-        simple_bai = '/cluster/work/pausch/jogrady/heQTL/work/T3/align/{srr}.bam.bai'
+        simple_bam = 'work/T3/align/{srr}.bam',
+        simple_bai = 'work/T3/align/{srr}.bam.bai'
     shell:
          'rename "_Aligned.sortedByCoord.out" "" {input.bam} && '
          'rename "_Aligned.sortedByCoord.out" "" {input.bai}'
 
 rule clean_4:
     input:
-        bam = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_4),
-        bai = expand('/cluster/work/pausch/jogrady/heQTL/work/T4/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_4)
+        bam = expand('work/T4/align/{{srr}}_Aligned.sortedByCoord.out.bam', srr = IDS_4),
+        bai = expand('work/T4/align/{{srr}}_Aligned.sortedByCoord.out.bam.bai', srr = IDS_4)
     output:
-        simple_bam = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}.bam',
-        simple_bai = '/cluster/work/pausch/jogrady/heQTL/work/T4/align/{srr}.bam.bai'
+        simple_bam = 'work/T4/align/{srr}.bam',
+        simple_bai = 'work/T4/align/{srr}.bam.bai'
     shell:
          'rename "_Aligned.sortedByCoord.out" "" {input.bam} && '
          'rename "_Aligned.sortedByCoord.out" "" {input.bai}'

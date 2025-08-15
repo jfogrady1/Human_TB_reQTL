@@ -8,3 +8,4 @@ snakepit/not_useful/*
 snakepit/response_eQTL.smk
 snakepit/.snakemake/singularity/c28705000b22c6cb97a5d49b46d13c69.simg
 snakepit/.snakemake/*
+Zenodo/*
