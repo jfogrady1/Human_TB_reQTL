@@ -9,7 +9,7 @@ The functional impact of genomic regulatory variation during active TB disease a
 
 ## Overview of study
 
-![Figure_01](https://github.com/user-attachments/assets/53a557b0-868f-4f99-8e53-5fc2a58c0fcb)
+![Figure_01](https://github.com/jfogrady1/Human_TB_reQTL/blob/main/Figure_01.png)
 
 ---
 
