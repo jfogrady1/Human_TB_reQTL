@@ -3,15 +3,15 @@
 library(tidyverse)
 library(data.table)
 library(arrow)
-
-lung_gtex <- read_parquet("/home/workspace/jogrady/heQTL/data/gtex/analysis/gtex_summary_statistics/GTEx_Analysis_v11_eQTL/Lung.v11.eQTLs.signif_pairs.parquet")
+args = CompandArgs(trailingOnly=TRUE)
+lung_gtex <- read_parquet(args[1])
 
 lung_gtex$phenotype_id <- gsub("\\..*", "", lung_gtex$phenotype_id)
 lung_gtex$variant_id <- gsub("chr", "", lung_gtex$variant_id)
 lung_gtex$variant_id <- gsub("_", ":", lung_gtex$variant_id)
 lung_gtex$variant_id <- gsub(":b38", "", lung_gtex$variant_id)  
 
-lfsr_resutls <- fread("/home/workspace/jogrady/heQTL/results/reQTLs/MashR_new_LFSR_values_annotated.txt")
+lfsr_resutls <- fread(args[2])
 lfsr_resutls$phenotype_id <- gsub("\\..*", "", lfsr_resutls$gene)
 
 
