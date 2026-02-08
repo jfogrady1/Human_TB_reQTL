@@ -1,6 +1,7 @@
 rule all:
     input:
-        "/home/workspace/jogrady/heQTL/results/Response_1/Figures/lung_gtex_comparison.pdf"
+        "/home/workspace/jogrady/heQTL/results/Response_1/Figures/lung_gtex_comparison.pdf",
+        '/home/workspace/jogrady/heQTL/results/Response_1/Figures/individual_correlation_heatmap.pdf'
 
 rule lung_GTEX_comparison:
     input:
@@ -12,4 +13,20 @@ rule lung_GTEX_comparison:
     shell:
         """
          Rscript {input.script} {input.GTEX_results} {input.LFSR_results}{output.pdf}
+        """
+
+correlation_between_covariates:
+    input:
+        script = "/home/workspace/jogrady/heQTL/scripts/covariate_correlation.R",
+        genotype_pcs = '/home/workspace/jogrady/heQTL/data/covariate/Genotypes.PCA_eigenvect.txt'
+    output:
+        pdf = '/home/workspace/jogrady/heQTL/results/Response_1/Figures/individual_correlation_heatmap.pdf',
+
+    params:
+        counts = '/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_'
+        sample = ['T0', 'T1', 'T2', 'T3', 'T4'],
+        cov_path = '/home/workspace/jogrady/heQTL/data/covariate/'
+    shell:
+        """
+        Rscript {input.script} {params.counts} {params.cov_path} {input.genotype_pcs} {params.sample} {output.pdf}
         """
