@@ -15,7 +15,7 @@ rule lung_GTEX_comparison:
          Rscript {input.script} {input.GTEX_results} {input.LFSR_results}{output.pdf}
         """
 
-correlation_between_covariates:
+rule: correlation_between_covariates:
     input:
         script = "/home/workspace/jogrady/heQTL/scripts/covariate_correlation.R",
         genotype_pcs = '/home/workspace/jogrady/heQTL/data/covariate/Genotypes.PCA_eigenvect.txt'
