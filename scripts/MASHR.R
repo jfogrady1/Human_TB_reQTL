@@ -1016,13 +1016,10 @@ eQTL_plot <- function(gene_id, SNP_id, gene_name, counts0, counts1, counts2, cou
   counts3_gene$Time <- "T3"
   counts4_gene$Time <- "T4"
   
-  
-  print("HERE")
-  
   vcf_temp <- vcf %>% filter(ID == SNP_id)
   vcf_temp <- pivot_longer(vcf_temp, cols = c(10:57), names_to = "Sample", values_to = "Genotype")
-  vcf_temp <- vcf_temp %>% select(3,10,11)
-  
+  vcf_temp <- vcf_temp %>% dplyr::select(ID, Sample, Genotype)
+
   counts0_gene <- left_join(counts0_gene, vcf_temp, by = c("Sample" = "Sample"))
   counts1_gene <- left_join(counts1_gene, vcf_temp, by = c("Sample" = "Sample"))
   counts2_gene <- left_join(counts2_gene, vcf_temp, by = c("Sample" = "Sample"))
@@ -1031,19 +1028,34 @@ eQTL_plot <- function(gene_id, SNP_id, gene_name, counts0, counts1, counts2, cou
   
   ALL <- rbind(counts0_gene, counts1_gene, counts2_gene, counts3_gene, counts4_gene)
   ALL[, c(1)] <- sapply(ALL[, c(1)], as.numeric)
+
+  # Normalize genotype strings (remove FORMAT suffix) and map to canonical labels
+  ALL$Genotype <- as.character(ALL$Genotype)
+  ALL$Genotype <- sub(":.*", "", ALL$Genotype)
+  ALL$Genotype <- trimws(ALL$Genotype)
+  ALL$Genotype[ALL$Genotype %in% c("0|0", "0/0", "0")] <- "HOM_REF"
+  ALL$Genotype[ALL$Genotype %in% c("0|1", "1|0", "0/1", "1/0", "HET")] <- "HET"
+  ALL$Genotype[ALL$Genotype %in% c("1|1", "1/1", "1")] <- "HOM_ALT"
+
+  # Set factor and drop unused levels
   ALL$Genotype <- factor(ALL$Genotype, levels = c("HOM_REF", "HET", "HOM_ALT"))
-  
+  ALL$Genotype <- droplevels(ALL$Genotype)
+  print(ALL$Genotype)
   ALL$Time <- factor(ALL$Time)
+
+  # Build label mapping for observed levels only
+  labmap <- c(HOM_REF = HOM, HET = HET, HOM_ALT = HOM_ALT)
+  obs <- levels(ALL$Genotype)
+  labels_to_use <- labmap[obs]
 
   p <- ggplot(ALL, aes(y = Expression, x = Genotype)) + 
     geom_boxplot(outlier.colour = NA, aes(fill = Time), trim=FALSE) +
     geom_jitter(shape=16, colour = "darkgrey", position=position_jitter(0.2)) + 
     scale_fill_manual(values = my_palette) +
     facet_wrap(~ Time,nrow = 1) + theme_bw() + xlab(SNP_id) + ylab(paste0("Residualised expression of ", gene_name)) +
-    scale_x_discrete(labels =  c(HOM, HET, HOM_ALT))
+    scale_x_discrete(limits = obs, labels = labels_to_use)
   return(p)
 }
-
 
 
 # TNFRS10A - MTB specific - Activator of apoptosis
