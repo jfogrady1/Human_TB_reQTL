@@ -396,7 +396,7 @@ ggplot(final_df, aes(x=as.factor(id), y=value, fill=cell)) +       # Note that i
   axis.title = element_blank(),
   panel.grid = element_blank(),
   legend.position = "",
-  plot.margin = unit(rep(-15,10), "cm")) +
+  plot.margin = unit(rep(-15,4), "cm")) +
   coord_polar(start = 0) +
   
   # Add text showing the value of each 100/75/50/25 lines
