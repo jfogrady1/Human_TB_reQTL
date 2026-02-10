@@ -214,7 +214,7 @@ ieQTL_plot <- function(gene, variant, gene_name, hom_ref, het, hom_alt, cell_typ
   if (length(groups) > 1) {
     print(TRUE)
     p + facet_wrap(~Time, nrow = 1)
-  }Bornin2013
+  }
   
   return(p)
 }
