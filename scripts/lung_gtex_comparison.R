@@ -3,7 +3,7 @@
 library(tidyverse)
 library(data.table)
 library(arrow)
-args = CompandArgs(trailingOnly=TRUE)
+args = commandArgs(trailingOnly=TRUE)
 lung_gtex <- read_parquet(args[1])
 
 lung_gtex$phenotype_id <- gsub("\\..*", "", lung_gtex$phenotype_id)
@@ -53,14 +53,6 @@ lfsr_lung_gtex_long <- lfsr_lung_gtex_long %>% left_join(., lung_gtex, by = "pai
 my_palette = c("#ffeda0", "#feb24c", "#fc4e2a", "#bd0026", "#800026")
 
 
-
-  
-  ggplot(aes(x = posterior_mean, y = slope)) +
-  geom_point() +
-  facet_wrap(~time) +
-  theme_bw()
-
-
 lfsr_lung_gtex_long %>%
   filter(lfsr < 0.05) %>% group_by(time) %>% 
   summarise(correlation = cor(posterior_mean, slope, method = 'spearman'),
@@ -97,7 +89,6 @@ direction_comparison <- lfsr_lung_gtex_long %>%
     same_direction = study_direction == gtex_direction & study_direction != 0
   )
 
-View(direction_comparison)
 # summary by time point (lfsr < 0.05)
 direction_summary_by_time <- direction_comparison %>%
   filter(lfsr < 0.05, study_direction != 0, gtex_direction != 0) %>%

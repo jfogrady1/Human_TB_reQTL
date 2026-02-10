@@ -4,7 +4,7 @@ library(data.table)
 library(tidyverse)
 library(ggplot2)
 
-
+args = commandArgs(trailingOnly=TRUE)
 
 groupPredict<-function(dataResponse,dataPredictors,R2Type=c("unadjusted","adjusted")){
   # set.seed(1)
@@ -37,7 +37,7 @@ custom_sort <- function(s) {
 calc_R2_individual <- function(sample) {
   # Read in the counts
   # Extact relevant columns (sample expression)
-  bed <- fread(paste0('/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_',sample,'.bed.gz'))
+  bed <- fread(paste0(args[1],sample,'.bed.gz'))
   expr <- t(bed[,-(1:4)]) # CHR , START, END, GeneID - all removed before transposing
 
 
@@ -53,7 +53,7 @@ calc_R2_individual <- function(sample) {
   K_elbow<-resultRunElbow #12.
 
   # Load in the known covariates and extract relevant ones that we think are important
-  cov <- read.table(paste0('/home/workspace/jogrady/heQTL/data/covariate/',sample,'_metadata.txt'), sep = "\t", header = T) %>% select(-c(Group, subgroup)) # uninformative
+  cov <- read.table(paste0(args[2],sample,'_metadata.txt'), sep = "\t", header = T) %>% select(-c(Group, subgroup)) # uninformative
 
   # convert to factor and numeric
   # Should also be sex but not for discussion here
@@ -76,7 +76,7 @@ calc_R2_individual <- function(sample) {
 
   # Read in the genotype PCs and join with the covariates - here read in top 10 as it will be interesting for reviewer
   # Join and sort
-  pca <- read.table('/home/workspace/jogrady/heQTL/data/covariate/Genotypes.PCA_eigenvect.txt', sep = "\t", header = T) %>% select(1:3) # top 3 genotype PCS
+  pca <- read.table(args[3], sep = "\t", header = T) %>% select(1:3) # top 3 genotype PCS
   known <- left_join(pca, cov, by = c("SampleID" = "Patient_ID")) # join
   known_sorted <- known %>% arrange(sapply(SampleID, custom_sort)) # sort so in same order as PC
   rownames(known_sorted) <- known_sorted$SampleID
@@ -131,27 +131,15 @@ calc_R2_individual <- function(sample) {
   PC_R2_df <- as.data.frame(PC_R2_list) %>%
     rownames_to_column(var = "PC") %>%
     pivot_longer(cols = -PC, names_to = "Covariate", values_to = "R2") %>% mutate(Timepoint = sample)
-
-  # Print summary
-  print("R2 explained by each PC for each covariate:")
-  print(PC_R2_df %>% pivot_wider(names_from = PC, values_from = R2) %>% head(10))
-
-  # Create visualization 1: Heatmap of R2 values
-  plot_heatmap_r2 <- ggplot(PC_R2_df, aes(x = PC, y = Covariate, fill = R2)) +
-    geom_tile() +
-    scale_fill_distiller(palette = "Blues", direction = 1, name = "R²") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    labs(title = "R² Explained by Each PC for Each Covariate",
-        x = "Principal Component", y = "Covariate")
+  
   return(PC_R2_df)
 }
 
-T0 <- calc_R2_individual("T0")
-T1 <- calc_R2_individual("T1")
-T2 <- calc_R2_individual("T2")
-T3 <- calc_R2_individual("T3")
-T4 <- calc_R2_individual("T4")
+T0 <- calc_R2_individual(args[4])
+T1 <- calc_R2_individual(args[5])
+T2 <- calc_R2_individual(args[6])
+T3 <- calc_R2_individual(args[7])
+T4 <- calc_R2_individual(args[8])
 
 plot_individual <- rbind(T0,T1,T2,T3,T4)
 
@@ -163,15 +151,5 @@ ggplot(plot_individual, aes(x = PC, y = Covariate, fill = R2)) +
   labs(title = "R² Explained by Each PC for Each Covariate",
       x = "Principal Component", y = "Covariate") +
   facet_wrap(~ Timepoint, scales = "free_x")
-
-# Create visualization 1: Heatmap of R2 values
-plot_heatmap_r2 <- ggplot(PC_R2_df, aes(x = PC, y = Covariate, fill = R2)) +
-  geom_tile() +
-  scale_fill_distiller(palette = "Blues", direction = 1, name = "R²") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "R² Explained by Each PC for Each Covariate",
-      x = "Principal Component", y = "Covariate")
-
 # Check correlation between known covariates and PCs
-ggsave('/home/workspace/jogrady/heQTL/results/Response_1/Figures/individual_correlation_heatmap.pdf', width = 12, height = 12, dpi = 600)
+ggsave(args[9], width = 12, height = 12, dpi = 600)
