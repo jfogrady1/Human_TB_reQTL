@@ -166,34 +166,7 @@ data_T2 <- fread(args[3]) %>% filter(is_eGene == TRUE) %>% mutate(variant_gene =
 data_T3 <- fread(args[4]) %>% filter(is_eGene == TRUE) %>% mutate(variant_gene = paste0(variant_id, "-", phenotype_id), Category = "T3")
 data_T4 <- fread(args[5]) %>% filter(is_eGene == TRUE) %>% mutate(variant_gene = paste0(variant_id, "-", phenotype_id), Category = "T4")
 
-head(data_T0)
-gtex <- fread("/home/workspace/jogrady/heQTL/data/gtex/Whole_Blood.signifpairs.txt")
-gtex$variant_id <- gsub("_b38", "", gtex$variant_id)
-gtex$variant_id <- gsub("_", ":", gtex$variant_id)
-gtex$variant_id <- gsub("chr", "", gtex$variant_id)
-gtex <- gtex %>% mutate(variant_gene = paste0(variant_id, "-", gene_id))
 
-gtex <- gtex %>% select(variant_gene, slope)
-colnames(gtex)[2] <- "gtex_slope"
-
-
-data_T0 <- left_join(data_T0, gtex)
-data_T0 <- data_T0 %>% filter(!is.na(gtex_slope))
-data_T1 <- left_join(data_T1, gtex)
-data_T2 <- left_join(data_T2, gtex)
-data_T3 <- left_join(data_T3, gtex)
-data_T4 <- left_join(data_T4, gtex)
-
-
-data <- rbind(data_T0, data_T1, data_T2, data_T3, data_T4)
-
-
-head(gtex)
-head(data_T0)
-ggplot(data = data, aes(x = slope, y = gtex_slope, col = Category, shape = Category)) + geom_point() + scale_colour_manual(values = my_palette) + geom_smooth(method = "lm")
-
-head(data_T0)
-cor(data_T0$slope, data_T0$gtex_slope)
 
 write.table("Number of signicant cis-eQTLs in T0 group", file = args[13], sep = "\t", col.names = F, append = TRUE)
 write.table(number_T0, file = args[13], sep = "\t", col.names = F, append = T)

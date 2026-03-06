@@ -7,7 +7,7 @@ autosome = [str(i) for i in range(1, 23)]
 include: "snakepit/downstream/quantification.smk"
 include: "snakepit/downstream/eqtl.smk"
 include: "snakepit/downstream/response_eQTL.smk"
-include: "snakepit/downstream/scRNA_deconvolution.smk"
+#include: "snakepit/downstream/scRNA_deconvolution.smk"
 include: "snakepit/downstream/ieQTL.smk"
 
 
@@ -31,7 +31,8 @@ rule all:
         expand("work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz", timepoint = config["TIME"]),
         expand("data/covariate/Scree_plot_PCA_{timepoint}.pdf", timepoint = config["TIME"]),
         expand("data/covariate/{timepoint}_eqtlcovs.txt", timepoint = config["TIME"]),
-        multiext("work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", ".bed", ".bim", ".fam"),          
+        multiext("work/DNA_seq/imputation/final/eQTL_genotypes_R0.6", ".bed", ".bim", ".fam"),
+        'results/eQTL/plotting/TSS_distance_comparison_eGene_only.pdf',          
         expand("results/eQTL/{timepoint}.{window}.cis_qtl.txt.gz", timepoint = config["TIME"], window = config["cis_window"]),
         expand("results/eQTL/{timepoint}.{window}.cis_qtl_fdr0.1.txt", window = config["cis_window"], timepoint = config["TIME"]),
         expand("results/eQTL/{timepoint}.{window}.cis_qtl_pairs.chr{chr}.parquet", timepoint = config["TIME"], window = config["cis_window"], chr = autosome),
@@ -44,11 +45,11 @@ rule all:
         expand("work/RNA_seq/quantification/{timepoint}_residualised_expression.txt", timepoint = config["TIME"]),
         "results/reQTLs/DR_eQTLs_MASH_2_lfsr_0.05.txt",
         # scRNA_seq work
-        expand("work/scRNA_seq/{singlecell_ids}", singlecell_ids=config["sc_ids"]),
-        "work/scRNA_seq/TB.combined.metadata.txt",
-        "work/scRNA_seq/Benchmark/ALL_benchmark_results.txt",
-        "work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt",
-        "work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation_res.txt",
+        #expand("work/scRNA_seq/{singlecell_ids}", singlecell_ids=config["sc_ids"]),
+        #"work/scRNA_seq/TB.combined.metadata.txt",
+        #"work/scRNA_seq/Benchmark/ALL_benchmark_results.txt",
+        #"work/RNA_seq/quantification/Raw_count_matrix_all_samples.txt",
+        #"work/scRNA_seq/Benchmark/CIBERSORTx_Music_correlation_res.txt",
         # ieQTLs
         expand("work/RNA_seq/quantification/TMM_INT_counts_{timepoint}.bed.gz", timepoint = config["TIME"]),
         expand("work/ieQTL/{t}_NK_cell_interaction_input_from_cibersort.txt", t = config["TIME"], celltype = config["cell"]),

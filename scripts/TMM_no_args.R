@@ -123,24 +123,20 @@ ggplot2::ggsave(args[5],width=16,height=11,unit="cm", dpi = 600)
 
 
 cov <- read.table(args[6], sep = "\t", header = T) %>% select(-c(Group, subgroup)) # uninformative
-
+# convert to factor and numeric
 print(head(cov))
-cov$gender <- factor(cov$gender, levels = c("male", "female"), labels = c(0,1))
-cov$gender <- as.numeric(cov$gender)
-cov$gender
-# Specify the levels for the "smear_results" column
-cov$smear_results <- factor(cov$smear_results, levels = c("Positive", "Negative"), labels = c(1,0))
-cov$smear_results <- as.numeric(cov$smear_results)
+cov$gender <- factor(cov$gender, levels = c("male", "female"))
 
-cov$subgroup_att <- factor(cov$subgroup_att, levels = c("Outbreak TB strain", "Short_ATT", "Long_ATT", "Difficult TB Cases", "TB Drug Resistance"), labels = c(0,1,2,3,4))
-cov$subgroup_att <- as.numeric(cov$subgroup_att)
+# Specify the levels for the "smear_results" column
+cov$smear_results <- factor(cov$smear_results, levels = c("Positive", "Negative"))
+
+
+cov$subgroup_att <- factor(cov$subgroup_att, levels = c("Outbreak TB strain", "Short_ATT", "Long_ATT", "Difficult TB Cases", "TB Drug Resistance"))
+
 cov$days_from_att <- scale(as.numeric(cov$days_from_att), center = TRUE)
 
 cov$Age <- scale(as.numeric(cov$Age), center = TRUE)
-cov$response_group
-cov$response_group <- factor(cov$response_group, levels = c("similar", "stronger_initial", "weaker", "stronger_delayed"), labels = c(1,2,3,4))
-cov$response_group <- as.numeric(cov$response_group)
-cov$response_group
+cov$response_group <- factor(cov$response_group)
 
 
 pca <- read.table(args[7], sep = "\t", header = T) %>% select(1:4) # top 3 genotype PCS

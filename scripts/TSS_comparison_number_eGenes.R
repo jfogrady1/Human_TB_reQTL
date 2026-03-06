@@ -1,6 +1,6 @@
 # Script to determine how many SNPs are close to the TSS of genes
 # and how many eGenes are detected at each window
-
+# Snakemake
 # libraries
 library(data.table)
 library(tidyverse)
@@ -39,8 +39,7 @@ open_eGene = function(timepoints, distances){
 }
 
 egene_results_df <- open_eGene(c("T0", "T1", "T2", "T3","T4"), c("10000","20000","50000","100000","200000", "500000", "1000000"))
-dim(egene_results_df)
-View(egene_results_df)
+
 eGene_number_total <- egene_results_df %>% filter(is_eGene == TRUE) %>% group_by(distance) %>% summarise(distance = unique(distance),number = length(unique(phenotype_id)))
 
 

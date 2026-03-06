@@ -132,7 +132,31 @@ calc_R2_individual <- function(sample) {
     rownames_to_column(var = "PC") %>%
     pivot_longer(cols = -PC, names_to = "Covariate", values_to = "R2") %>% mutate(Timepoint = sample)
   
-  return(PC_R2_df)
+  # ============================================================================
+  # Calculate unadjusted R2 of ALL PCs on each known covariate
+  # ============================================================================
+  
+  # Prepare known covariates as numeric matrix for groupPredict
+  known_numeric <- known_sorted
+  for (col in colnames(known_numeric)) {
+    if (is.factor(known_numeric[[col]])) {
+      known_numeric[[col]] <- as.numeric(known_numeric[[col]])
+    }
+  }
+  known_numeric <- as.matrix(known_numeric)
+  
+  # Use groupPredict: response = known covariates, predictors = all PCs
+  grouped_R2 <- groupPredict(dataResponse = known_numeric, 
+                              dataPredictors = PCsTop, 
+                              R2Type = "unadjusted")
+  
+  grouped_R2_df <- data.frame(
+    Covariate = colnames(known_sorted),
+    R2 = grouped_R2,
+    Timepoint = sample
+  )
+  
+  return(list(individual = PC_R2_df, grouped = grouped_R2_df))
 }
 
 T0 <- calc_R2_individual(args[4])
@@ -141,8 +165,13 @@ T2 <- calc_R2_individual(args[6])
 T3 <- calc_R2_individual(args[7])
 T4 <- calc_R2_individual(args[8])
 
-plot_individual <- rbind(T0,T1,T2,T3,T4)
+# Combine individual PC R2 results
+plot_individual <- rbind(T0$individual, T1$individual, T2$individual, T3$individual, T4$individual)
 
+# Combine grouped R2 results (all PCs on each covariate)
+plot_grouped <- rbind(T0$grouped, T1$grouped, T2$grouped, T3$grouped, T4$grouped)
+
+# Plot 1: R2 explained by each PC for each covariate
 ggplot(plot_individual, aes(x = PC, y = Covariate, fill = R2)) +
   geom_tile() +
   scale_fill_distiller(palette = "Blues", direction = 1, name = "R²") +
@@ -153,3 +182,14 @@ ggplot(plot_individual, aes(x = PC, y = Covariate, fill = R2)) +
   facet_wrap(~ Timepoint, scales = "free_x")
 # Check correlation between known covariates and PCs
 ggsave(args[9], width = 12, height = 12, dpi = 600)
+
+# Plot 2: Unadjusted R2 of ALL PCs combined on each covariate
+ggplot(plot_grouped, aes(x = Timepoint, y = Covariate, fill = R2)) +
+  geom_tile() +
+  geom_text(aes(label = round(R2, 3)), color = "black", size = 3) +
+  scale_fill_distiller(palette = "Blues", direction = 1, name = "R²") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Unadjusted R² of All PCs on Each Known Covariate",
+       x = "Timepoint", y = "Covariate")
+ggsave(args[10], width = 10, height = 8, dpi = 600)

@@ -225,8 +225,19 @@ rule nominal_mappinngT4:
             --window {params.cis_window_size} \
             --mode cis_nominal
         '''
-
-
+rule TSS_comparison_eGenes:
+    input:
+        script = 'scripts/TSS_comparison_number_eGenes.R',
+        egene_files = expand('results/eQTL/{timepoint}.{window}.cis_qtl_fdr0.1.txt',
+                             timepoint=['T0', 'T1', 'T2', 'T3', 'T4'],
+                             window=['10000', '20000', '50000', '100000', '200000', '500000', '1000000'])
+    output:
+        combined = 'results/eQTL/plotting/TSS_distance_comparison.pdf',
+        egene_only = 'results/eQTL/plotting/TSS_distance_comparison_eGene_only.pdf'
+    shell:
+        '''
+        Rscript {input.script}
+        '''
 
 rule parquet2py:
     input:

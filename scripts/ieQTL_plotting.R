@@ -196,7 +196,6 @@ ieQTL_plot <- function(gene, variant, gene_name, hom_ref, het, hom_alt, cell_typ
   colnames(exp)[1] <- "Gene"
   colnames(exp)[4] <- "Cell_Proportion"
   exp <- left_join(exp, vcf_test)
-  print(exp)
   exp <- exp %>% filter(Time %in% groups)
   p <- ggplot(exp, aes(x = Cell_Proportion, y = as.numeric(Gene), col = genotype)) + geom_point(size =3, alpha = 0.8) + theme_bw() + 
   geom_smooth(method = "lm", se = FALSE) + 
