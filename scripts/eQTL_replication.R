@@ -190,8 +190,14 @@ table(AC_INTERVAL$Time)
 #T0  T1  T2  T3  T4 
 #480 475 516 494 508 
 
-FINAL_INTERVAL_pi1 <- AC_INTERVAL %>% group_by(Time) %>% arrange(desc(pval_nominal)) %>% summarise(pi0 = pi0est(INTERVAL_p_nominal)$pi0,
-  pi1 = 1 - pi0est(INTERVAL_p_nominal)$pi0) %>% mutate(Study = "INTERVAL")
+FINAL_INTERVAL_pi1 <- AC_INTERVAL %>% group_by(Time) %>% arrange(desc(pval_nominal)) %>% summarise(
+  pi0 = {
+    p_vals <- .data$INTERVAL_p_nominal
+    # Remove NAs, Infs, and values outside [0,1] range
+    p_vals <- p_vals[!is.na(p_vals) & !is.infinite(p_vals) & p_vals >= 0 & p_vals <= 1]
+    if (length(p_vals) > 0) pi0est(p_vals)$pi0 else NA
+  },
+  .groups = 'drop') %>% mutate(pi1 = 1 - pi0) %>% mutate(Study = "INTERVAL")
 
 
 FINAL_INTERVAL_pi1
