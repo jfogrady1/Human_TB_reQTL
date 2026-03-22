@@ -758,20 +758,19 @@ terms <- c("TNF-alpha/NF-kappa B signaling complex 10",
            "HSP90-CDC37 chaperone complex",
            "Aryl hydrocarbon receptor pathway",
            "Cellular response to chemical stress",
-           "regulation of chromatin binding",
+           "ITGAM-ITGB2-CD11 complex",
            "NOD-like receptor signaling pathway",
            "RIPK1-mediated regulated necrosis",
            "Negative regulation of NOTCH4 signaling",
            "Drug-mediated inhibition of ERBB2 signaling",
-           "HIF1A and PPARG regulation of glycolysis",
-           "MLL4 complex",
+           "IKB(beta)-RELA-cREL complex",
+           "BAD-BCL-2 complex",
            "PTIP-HMT complex",
-           "Interleukin-1 signaling",
-           "Proteasome",
-           "Hsp90 protein binding"
+           "Cytoprotection by HMOX1",
+           "WNT5:FZD7-leishmania damping",
+           "HIV Infection"
 
 )
-
 
 
 gostres$result <- gostres$result %>%
