@@ -10,17 +10,17 @@ args = commandArgs(trailingOnly = TRUE)
 
 my_palette = c("#ffeda0", "#feb24c", "#fc4e2a", "#bd0026", "#800026")
 # read in sig genes
-T0_sig = fread(args[1]) %>% filter(is_eGene == TRUE) %>% mutate(Time = "T0")
-T1_sig = fread(args[2]) %>% filter(is_eGene == TRUE) %>% mutate(Time = "T1")
-T2_sig = fread(args[3]) %>% filter(is_eGene == TRUE) %>% mutate(Time = "T2")
-T3_sig = fread(args[4]) %>% filter(is_eGene == TRUE) %>% mutate(Time = "T3")
-T4_sig = fread(args[5]) %>% filter(is_eGene == TRUE) %>% mutate(Time = "T4")
+T0_sig = fread("/home/workspace/jogrady/heQTL/results/eQTL/T0.50000.cis_qtl_fdr0.1.txt") %>% filter(is_eGene == TRUE) %>% mutate(Time = "T0")
+T1_sig = fread("/home/workspace/jogrady/heQTL/results/eQTL/T1.50000.cis_qtl_fdr0.1.txt") %>% filter(is_eGene == TRUE) %>% mutate(Time = "T1")
+T2_sig = fread("/home/workspace/jogrady/heQTL/results/eQTL/T2.50000.cis_qtl_fdr0.1.txt") %>% filter(is_eGene == TRUE) %>% mutate(Time = "T2")
+T3_sig = fread("/home/workspace/jogrady/heQTL/results/eQTL/T3.50000.cis_qtl_fdr0.1.txt") %>% filter(is_eGene == TRUE) %>% mutate(Time = "T3")
+T4_sig = fread("/home/workspace/jogrady/heQTL/results/eQTL/T4.50000.cis_qtl_fdr0.1.txt") %>% filter(is_eGene == TRUE) %>% mutate(Time = "T4")
 
-median(abs(T0_sig$slope)) # 0.784272
-median(abs(T1_sig$slope)) # 0.749377
-median(abs(T2_sig$slope)) # 0.768171
-median(abs(T3_sig$slope)) # 0.79004
-median(abs(T4_sig$slope)) # 0.794482
+median(abs(T0_sig$slope)) #  0.808947
+median(abs(T1_sig$slope)) #  0.7884775
+median(abs(T2_sig$slope)) #  0.803164
+median(abs(T3_sig$slope)) #  0.820452
+median(abs(T4_sig$slope)) #  0.8277915
 head(T0_sig)
 
 hist(T0_sig$true_df)
@@ -53,11 +53,11 @@ ggsave(args[6], width = 15, height = 12)
 
 
 # Read in sum stats
-T0 <- fread("results/eQTL/T0.50000.cis_qtl_pairs.txt.gz")
-T1 <- fread(args[8]) 
-T2 <- fread(args[9])
-T3 <- fread(args[10])  
-T4 <- fread(args[11]) 
+T0 <- fread("/home/workspace/jogrady/heQTL/results/eQTL/T0.50000.cis_qtl_pairs.ALL.txt.gz")
+T1 <- fread("/home/workspace/jogrady/heQTL/results/eQTL/T1.50000.cis_qtl_pairs.ALL.txt.gz") 
+T2 <- fread("/home/workspace/jogrady/heQTL/results/eQTL/T2.50000.cis_qtl_pairs.ALL.txt.gz")
+T3 <- fread("/home/workspace/jogrady/heQTL/results/eQTL/T3.50000.cis_qtl_pairs.ALL.txt.gz")  
+T4 <- fread("/home/workspace/jogrady/heQTL/results/eQTL/T4.50000.cis_qtl_pairs.ALL.txt.gz") 
 
 
 
@@ -74,9 +74,9 @@ T4 <- T4 %>% filter(phenotype_id %in% T4_sig$phenotype_id) %>% left_join(T4_sig[
 
 head(T0)
 # Allelic concordance
-
-files <- c(args[12:33])
-print(files)
+#files <- c(args[12:33])
+files = list.files(path = "/home/workspace/jogrady/heQTL/data/gtex/analysis/INTERVAL_eQTL_summary_statistics/", pattern = "^INTERVAL_eQTL_nominal_chr.*\\.tsv$", full.names = TRUE)
+files
 INTERVAL <- lapply(files,function(x) {
   read.table(file = x, 
              sep = '\t', 
@@ -86,7 +86,8 @@ INTERVAL <- bind_rows(INTERVAL)
 head(INTERVAL)
 INTERVAL$pair = paste0(INTERVAL$phenotype_id, "-", INTERVAL$chr, ":", INTERVAL$pos_b38)
 colnames(INTERVAL)[7:9] <- c("INTERVAL_p_nominal", "INTERVAL_slope", "INTERVAL_slope_se")
-colnames(INTERVAL)[12:13] <- c("INTERVAL_effect_allele", "INTERVAL_other_allele")
+names(INTERVAL)[12] <- "INTERVAL_effect_allele"
+names(INTERVAL)[13] <- "INTERVAL_other_allele"
 
 INTERVAL_signif = read.table(args[34], header = T) %>% filter(qval_sig == TRUE) %>% select(phenotype_id, pval_nominal_threshold)
 colnames(INTERVAL_signif)[2] <- "INTERVAL_pval_threshold"
@@ -186,16 +187,24 @@ head(AC_INTERVAL)
 
 
 table(AC_INTERVAL$Time)
+# T0  T1  T2  T3  T4 
+# 383 348 378 379 382 
 
-#T0  T1  T2  T3  T4 
-#480 475 516 494 508 
-
-FINAL_INTERVAL_pi1 <- AC_INTERVAL %>% group_by(Time) %>% arrange(desc(pval_nominal)) %>% summarise(
+FINAL_INTERVAL_pi1 <- AC_INTERVAL %>% group_by(Time) %>% summarise(
   pi0 = {
     p_vals <- .data$INTERVAL_p_nominal
     # Remove NAs, Infs, and values outside [0,1] range
     p_vals <- p_vals[!is.na(p_vals) & !is.infinite(p_vals) & p_vals >= 0 & p_vals <= 1]
-    if (length(p_vals) > 0) pi0est(p_vals)$pi0 else NA
+    if (length(p_vals) > 0) {
+      tryCatch(
+        pi0est(p_vals, pi0.method = "bootstrap", lambda = seq(0.05, 0.95, 0.05))$pi0,
+        error = function(e) {
+          pmin(1, pmax(0, mean(p_vals >= 0.5) / 0.5))
+        }
+      )
+    } else {
+      NA_real_
+    }
   },
   .groups = 'drop') %>% mutate(pi1 = 1 - pi0) %>% mutate(Study = "INTERVAL")
 
@@ -222,6 +231,8 @@ dim(AC_INTERVAL)
 FINAL_INTERVAL_cor = AC_INTERVAL %>% group_by(Time) %>% summarize(Rho = as.numeric(cor.test(slope, INTERVAL_new_slope, method = "spearman", exact = FALSE)$estimate),
                                              P = as.numeric(cor.test(slope, INTERVAL_new_slope, method = "spearman", exact = FALSE)$p.value)) %>% mutate(Study = "INTERVAL")
 
+
+print(FINAL_INTERVAL_cor)
 # T0    0.798 3.43e-107 INTERVAL
 # T1    0.806 5.47e-110 INTERVAL
 # T2    0.827 1.73e-130 INTERVAL
@@ -304,9 +315,9 @@ ggsave(args[37], width = 12, height = 12)
 
 
 library(pwr)
-pwr.f2.test(u = 1, v = 48 - 12 - 1, sig.level = 0.0001, power = 0.8) # T0
-pwr.f2.test(u = 1, v = 48 - 14 - 1, sig.level = 0.0001, power = 0.8) # T1
-pwr.f2.test(u = 1, v = 48 - 13 - 1, sig.level = 0.0001, power = 0.8) # T3
-pwr.f2.test(u = 1, v = 48 - 13 - 1, sig.level = 0.0001, power = 0.8) # T3
-pwr.f2.test(u = 1, v = 48 - 15 - 1, sig.level = 0.0001, power = 0.8) # T4
+pwr.f2.test(u = 1, v = 48 - 16 - 1, sig.level = 0.0001, power = 0.8) # T0
+pwr.f2.test(u = 1, v = 48 - 18 - 1, sig.level = 0.0001, power = 0.8) # T1
+pwr.f2.test(u = 1, v = 48 - 17 - 1, sig.level = 0.0001, power = 0.8) # T3
+pwr.f2.test(u = 1, v = 48 - 17 - 1, sig.level = 0.0001, power = 0.8) # T3
+pwr.f2.test(u = 1, v = 48 - 18 - 1, sig.level = 0.0001, power = 0.8) # T4
 
