@@ -749,7 +749,7 @@ ordered_query = TRUE,
                 multi_query = FALSE, significant = TRUE, exclude_iea = FALSE, 
                 measure_underrepresentation = FALSE, evcodes = TRUE, 
                 user_threshold = 0.05, correction_method = "fdr", 
-                custom_bg = common_genes, sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC","CORUM", 'WP'))
+                custom_bg = common_genes, sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC","CORUM", "HPA" 'WP'))
 df <- as.data.frame(do.call(cbind, gostres$result))
 df <- apply(df,2,as.character)
 write.table(df, file = args[17], sep = "\t", quote = FALSE)
