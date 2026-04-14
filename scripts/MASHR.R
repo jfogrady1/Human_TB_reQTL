@@ -749,14 +749,16 @@ ordered_query = TRUE,
                 multi_query = FALSE, significant = TRUE, exclude_iea = FALSE, 
                 measure_underrepresentation = FALSE, evcodes = TRUE, 
                 user_threshold = 0.05, correction_method = "fdr", 
-                custom_bg = common_genes)
+                custom_bg = common_genes, sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC","CORUM", 'WP'))
 df <- as.data.frame(do.call(cbind, gostres$result))
 df <- apply(df,2,as.character)
 write.table(df, file = args[17], sep = "\t", quote = FALSE)
 
-terms <- c("TNF-alpha/NF-kappa B signaling complex 10",
+terms <- c("MAD1-mSin3A-HDAC1/2 complex",
            "HSP90-CDC37 chaperone complex",
-           "Aryl hydrocarbon receptor pathway",
+           "ITGAM-ITGB2-CD11 complex",
+           "Methyltransferase complex",
+           "PTIP-HMT complex",
            "Cellular response to chemical stress",
            "ITGAM-ITGB2-CD11 complex",
            "NOD-like receptor signaling pathway",
@@ -767,6 +769,9 @@ terms <- c("TNF-alpha/NF-kappa B signaling complex 10",
            "BAD-BCL-2 complex",
            "PTIP-HMT complex",
            "Cytoprotection by HMOX1",
+           "Lung; macrophages[≥Medium]",
+           "Lung; alveolar cells type II[≥Medium]",
+           "Lung; alveolar cells type I[≥Medium]",
            "WNT5:FZD7-leishmania damping",
            "HIV Infection"
 

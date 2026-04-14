@@ -53,7 +53,7 @@ ggsave(args[6], width = 15, height = 12)
 
 
 # Read in sum stats
-T0 <- fread(args[7])
+T0 <- fread("results/eQTL/T0.50000.cis_qtl_pairs.txt.gz")
 T1 <- fread(args[8]) 
 T2 <- fread(args[9])
 T3 <- fread(args[10])  
