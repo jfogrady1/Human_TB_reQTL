@@ -374,6 +374,9 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black", face = 
 Mahsh_r_plot
 
 ggsave("/home/workspace/jogrady/heQTL/results/reQTLs/MashR_se_pvalue.pdf", width = 12, height = 8, dpi = 600)
+
+print('##############################RESULTS of T and F tests##################################')
+
 t.test(T0_beta$slope, new_effect_T0$slope, paired = TRUE)
 
 
@@ -432,7 +435,6 @@ new_se_merged <- left_join(new_se_T0, new_se_T1)
 new_se_merged <- left_join(new_se_merged, new_se_T2)
 new_se_merged <- left_join(new_se_merged, new_se_T3)
 new_se_merged <- left_join(new_se_merged, new_se_T4)
-
 
 
 mas_signif_table$variant_gene <- paste0(mas_signif_table$variant, "-", mas_signif_table$gene)
@@ -749,7 +751,7 @@ ordered_query = TRUE,
                 multi_query = FALSE, significant = TRUE, exclude_iea = FALSE, 
                 measure_underrepresentation = FALSE, evcodes = TRUE, 
                 user_threshold = 0.05, correction_method = "fdr", 
-                custom_bg = common_genes, sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC","CORUM", "HPA" 'WP'))
+                custom_bg = common_genes, sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC","CORUM", "HPA", 'WP'))
 df <- as.data.frame(do.call(cbind, gostres$result))
 df <- apply(df,2,as.character)
 write.table(df, file = args[17], sep = "\t", quote = FALSE)
