@@ -59,6 +59,7 @@ rule all:
         expand("work/ieQTL/{t}_Classical_Monocyte.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
         expand("work/ieQTL/{t}_Non-classical_Monocyte.cis_qtl_top_assoc.txt.gz", t = config["TIME"]),
         expand("work/ieQTL/{t}_{celltype}_interaction_input_from_cibersort.txt", t = config["TIME"], celltype = config["cell"]),
+        expand("work/RNA_seq/quantification/{t}_{celltype}_residualised_expression.txt", t = config["TIME"], celltype = config['cell']),
         expand("work/ieQTL/{t}_cell_interaction_input_from_cibersort.txt", t = config["TIME"]),
         "results/ieQTLs/ieQTL_MASHR.RData",
         "results/eQTL/results/INTERVAL_mashr_comparison.pdf"
