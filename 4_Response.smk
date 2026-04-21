@@ -21,6 +21,7 @@ rule correlation_between_covariates:
         genotype_pcs = '/home/workspace/jogrady/heQTL/data/covariate/Genotypes.PCA_eigenvect.txt'
     output:
         pdf = '/home/workspace/jogrady/heQTL/results/Response_1/Figures/individual_correlation_heatmap.pdf',
+        pdf_combined = '/home/workspace/jogrady/heQTL/results/Response_1/Figures/combined_correlation_heatmap.pdf'
 
     params:
         counts = '/home/workspace/jogrady/heQTL/work/RNA_seq/quantification/TMM_INT_counts_',
@@ -28,5 +29,5 @@ rule correlation_between_covariates:
         cov_path = '/home/workspace/jogrady/heQTL/data/covariate/'
     shell:
         """
-        Rscript {input.script} {params.counts} {params.cov_path} {input.genotype_pcs} {params.sample} {output.pdf}
+        Rscript {input.script} {params.counts} {params.cov_path} {input.genotype_pcs} {params.sample} {output.pdf} {output.pdf_combined}
         """
