@@ -45,6 +45,7 @@ rule all:
         expand("work/RNA_seq/quantification/{timepoint}_residualised_expression.txt", timepoint = config["TIME"]),
         "results/reQTLs/DR_eQTLs_MASH_2_lfsr_0.05.txt",
         # scRNA_seq work
+        # Uncomment to enable the sc workflow
         #expand("work/scRNA_seq/{singlecell_ids}", singlecell_ids=config["sc_ids"]),
         #"work/scRNA_seq/TB.combined.metadata.txt",
         #"work/scRNA_seq/Benchmark/ALL_benchmark_results.txt",
