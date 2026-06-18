@@ -3,8 +3,10 @@
 ---
 
 ## Summary
-The functional impact of genomic regulatory variation during active TB disease and anti-TB treatment (ATT) remains poorly understood. Here, using 240 paired whole-blood RNA-seq samples from n = 48 active TB patients who underwent ATT, we call and impute 1,506,948 genome-wide variants from these transcriptomes to map cis-expression quantitative trait loci (eQTL), response-eQTL, and cell type interaction eQTL (ieQTL) by computationally deconvolving the bulk RNA-seq data. We show that the whole-blood transcriptome is substantially perturbed during ATT by identifying 7,246 differentially expressed genes. We characterise 5,129 cis-eQTL and 587 response-eQTL and show that genes associated with reQTL are significantly enriched in pathways impacting the host response to mycobacterial challenge and xenobiotic metabolism. We highlight significant changes in cell type proportions due to ATT, notably for NK cells and classical monocytes. We characterise 921 ieQTL, including an active-TB classical monocyte-specific ieQTL for the gene NOD2. Our work sheds light on the immunogenetics of TB disease and treatment, while providing a framework for integrative genomics studies using only RNA-seq data.
-
+Background: The functional impact of genomic variation during active tuberculosis disease and anti-tuberculosis treatment, respectively, remains poorly understood owing to a paucity of in vivo context-specific genome-wide molecular quantitative trait loci studies for these phenotypic traits. Characterising the context-specific functional impact of sequence polymorphisms represents a necessary endeavour to provide new insight into how regulatory variation modulates complex traits, such as susceptibility to Mycobacterium tuberculosis infection.
+Methods: Using 240 paired whole-blood RNA-seq samples from n = 48 active tuberculosis patients who subsequently underwent anti-TB treatment, we called and imputed genome-wide variants from these transcriptomes and mapped cis-expression quantitative trait loci (eQTL), response-eQTL (reQTL), and cell type interaction eQTL (ieQTL) after computationally deconvolving the bulk RNA-seq data using peripheral blood mononuclear single-cell RNA-seq data from n = 5 TB-infected patients as a reference. 
+Results: Here, we characterise 1,506,948 high-quality imputed genome-wide variants from the transcriptomics data.  We identify a total of 5,356 cis-eQTL and 790 reQTL and show that genes associated with reQTL are significantly enriched in pathways that impact the host response to mycobacterial challenge and xenobiotic metabolism. Additionally, we highlight significant changes in the proportions of computationally deconvolved cell types during anti-tuberculosis treatment, notably for natural killer cells and classical monocytes. Leveraging these deconvolved cell type proportions, we characterise a total of 1,098 ieQTL, including an active-TB classical monocyte-specific ieQTL for the gene ALOX5.
+Conclusions: Our work sheds light on the immunogenetics of tuberculosis disease and treatment and provides a framework for integrative genomics studies using only RNA-seq data.
 ---
 
 ## Overview of study
@@ -26,7 +28,7 @@ The functional impact of genomic regulatory variation during active TB disease a
 
 ### Additional Data
 
-Filtered and imputed variants for all n = 48 samples, as well as the raw cis-eQTL, reQTL, and ieQTL results, will be made publicly available upon publication of this study.
+Filtered and imputed variants for all n = 48 samples, as well as the raw cis-eQTL, reQTL, and ieQTL results are available on Zenodo (https://zenodo.org/records/15103705)
 
 ---
 ## Citation
