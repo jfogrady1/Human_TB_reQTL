@@ -28,7 +28,7 @@ args[2] <- "T1"
 args[3] <- "T2"
 args[4] <- "T3"
 args[5] <- "T4"
-args[6] <- "home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf"
+args[6] <- "/home/workspace/jogrady/heQTL/data/ref_genome/gencode.v43.annotation.gtf"
 
 ##### Define functions for and opening necessary files
 
