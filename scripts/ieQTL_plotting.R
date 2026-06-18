@@ -167,6 +167,8 @@ ieQTL_plot <- function(gene, variant, gene_name, hom_ref, het, hom_alt, cell_typ
                                           vcf_test == "1" ~ het,
                                           vcf_test == "2" ~ hom_alt))
 
+  vcf_test$genotype <- factor(vcf_test$genotype, levels = c(paste0(hom_ref, ":", hom_ref), het, hom_alt))
+
   if (gene_name == "IFNGR2") {
     vcf_test <- vcf_test %>% mutate(genotype = case_when(vcf_test == "0" ~ paste0(hom_ref, ":", hom_ref),
                                           vcf_test == "1" ~ paste0(het, "/", hom_alt),
@@ -231,6 +233,46 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
 
 ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/NOD2_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
 
+TRIM22_CM <- ieQTL_plot(variant = "11:5639791:G:T", gene = "ENSG00000132274.17", gene_name = "TRIM22", hom_ref = "G", het = "G:T", hom_alt = "T:T", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
+TRIM22_CM + theme_bw() + labs(y = "Residualised TRIM22 expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:\n11:5639791:G:T") +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
+    axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+    axis.title.y = element_text(size = 21, color = "black"),
+    axis.title.x = element_text(size = 21, color = "black"),
+    panel.grid.minor = element_blank(),
+    legend.title = element_text(size = 12, color = "black"),
+    legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
+    scale_colour_viridis(discrete = TRUE)
+
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/TRIM22_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
+
+
+IRAK3_CM <- ieQTL_plot(variant = "12:66156711:C:A", gene = "ENSG00000090376.11", gene_name = "IRAK3", hom_ref = "C", het = "C:A", hom_alt = "A:A", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
+IRAK3_CM + theme_bw() + labs(y = "Residualised IRAK3 expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:\n12:66156711:C:A") +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
+    axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+    axis.title.y = element_text(size = 21, color = "black"),
+    axis.title.x = element_text(size = 21, color = "black"),
+    panel.grid.minor = element_blank(),
+    legend.title = element_text(size = 12, color = "black"),
+    legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
+    scale_colour_viridis(discrete = TRUE)
+
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/IRAK3_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
+
+
+ALOX5 <- ieQTL_plot(variant = "10:45395606:TA:T", gene = "ENSG00000090376.11", gene_name = "ALOX5", hom_ref = "TA", het = "TA:T", hom_alt = "T:T", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
+ALOX5 + theme_bw() + labs(y = "Residualised ALOX5 expression", x = "Normalised Classical Monocyte proportion", colour = "Genotype:\n10:45395606:TA:T") +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
+    axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+    axis.title.y = element_text(size = 21, color = "black"),
+    axis.title.x = element_text(size = 21, color = "black"),
+    panel.grid.minor = element_blank(),
+    legend.title = element_text(size = 12, color = "black"),
+    legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
+    scale_colour_viridis(discrete = TRUE)
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/ALOX5_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
+
 
 ATG4B <-  ieQTL_plot(variant = "2:241678377:A:G", gene = "ENSG00000168397.17", gene_name = "ATG4B", hom_ref = "A", het = "A:G", hom_alt = "G:G", cell_type = "Non-classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
 ATG4B + theme_bw() + labs(y = "Residualised ATG4B expression", x = "Normalised non-classical monocyte proportion", colour = "Genotype:\n2:241678377:A:G") +
@@ -245,3 +287,29 @@ theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
 
 ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/ATG4B_Non_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
 
+
+CASP1 <-  ieQTL_plot(variant = "11:104990672:A:G", gene = "ENSG00000137752.25", gene_name = "CASP1", hom_ref = "A", het = "A:G", hom_alt = "G:G", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
+CASP1 + theme_bw() + labs(y = "Residualised CASP1 expression", x = "Normalised classical monocyte proportion", colour = "Genotype:\n11:104990672:A:G") +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
+    axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+    axis.title.y = element_text(size = 21, color = "black"),
+    axis.title.x = element_text(size = 21, color = "black"),
+    panel.grid.minor = element_blank(),
+    legend.title = element_text(size = 12, color = "black"),
+    legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
+    scale_colour_viridis(discrete = TRUE)
+
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/CASP1_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
+
+MAPK14 <-  ieQTL_plot(variant = "6:36031787:C:G", gene = "ENSG00000112062.12", gene_name = "MAPK14", hom_ref = "C", het = "C:G", hom_alt = "G:G", cell_type = "Classical_Monocyte", groups = c("T0", "T1", "T2", "T3", "T4"))
+MAPK14 + theme_bw() + labs(y = "Residualised MAPK14 expression", x = "Normalised classical monocyte proportion", colour = "Genotype:\n6:36031787:C:G") +
+theme(axis.text.x = element_text(angle = 0, size = 15, colour = "black"),
+    axis.text.y = element_text(angle = 0, size = 15, colour = "black"),
+    axis.title.y = element_text(size = 21, color = "black"),
+    axis.title.x = element_text(size = 21, color = "black"),
+    panel.grid.minor = element_blank(),
+    legend.title = element_text(size = 12, color = "black"),
+    legend.text = element_text(size = 12)) + guides(colour = guide_legend(override.aes = list(size=5))) +
+    scale_colour_viridis(discrete = TRUE)
+
+ggsave("/home/workspace/jogrady/heQTL/work/ieQTL/MAPK14_Classical_Monocyte_example_ieQTL.pdf", width = 15, height = 12, dpi = 600)
